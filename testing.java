@@ -1,1 +1,1 @@
-//Help the pogs
+//I am a computer
