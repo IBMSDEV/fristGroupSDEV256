@@ -36,6 +36,7 @@ import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.TextFieldTableCell;
 
 public class finalProject extends Application {
+    Connection connection = null;
     // text fields for editing and adding data for the other scenes
     TextField partsUsed = new TextField();
     TextField partCost = new TextField();
@@ -61,7 +62,20 @@ public class finalProject extends Application {
     static ObservableList<ServiceOrder> serviceOrders = FXCollections.observableArrayList();
     String selectedDealerNames = "";
 
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) throws IOException, SQLException, ClassNotFoundException {
+       try {
+        Class.forName("org.sqlite.JDBC");
+        connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
+        System.out.print("SUP");
+       } catch (Exception e) {
+        Alert a = new Alert(AlertType.ERROR);
+        a.setContentText("Cannot Connect To DataBase");
+
+        // show the dialog
+        a.show();
+       }
+        
+
         // calls to have the data be added into the collection from files
         fillData();
         // the making a table
@@ -821,5 +835,6 @@ public class finalProject extends Application {
     public static void main(String[] args) {
         // starting the GUI
         Application.launch(args);
+        
     }
 }
