@@ -13,13 +13,9 @@ import javafx.scene.control.ComboBox;
 
 import java.util.ArrayList;
 import java.io.IOException;
-import java.util.Scanner;
 
 //TODO CHANGE THIS FROM * TO WHAT IS NEEDED BECAUSE IT IS BAD FOR IT TO BE *
 import java.sql.*;
-
-//Temp because of No DB allows for adding to a file close by
-import java.io.File;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -36,7 +32,7 @@ import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.TextFieldTableCell;
 
 public class finalProject extends Application {
-    Connection connection = null;
+    static Connection connection = null;
     // text fields for editing and adding data for the other scenes
     TextField partsUsed = new TextField();
     TextField partCost = new TextField();
@@ -46,11 +42,14 @@ public class finalProject extends Application {
     TextField techDealershipID = new TextField();
     TextField techName = new TextField();
     TextField dealerName = new TextField();
+    TextField dealerShipPhone = new TextField();
+    
     TextField dealerAddress = new TextField();
     TextField vin = new TextField();
-    TextField options = new TextField();
-    TextField engineSize = new TextField();
-    TextField transmissionType = new TextField();
+    TextField serviceDate = new TextField();
+    TextField owner = new TextField();
+    TextField year = new TextField();
+    TextField mileage = new TextField();
     TextField make = new TextField();
     TextField model = new TextField();
 
@@ -63,18 +62,17 @@ public class finalProject extends Application {
     String selectedDealerNames = "";
 
     public void start(Stage primaryStage) throws IOException, SQLException, ClassNotFoundException {
-       try {
-        Class.forName("org.sqlite.JDBC");
-        connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
-        System.out.print("SUP");
-       } catch (Exception e) {
-        Alert a = new Alert(AlertType.ERROR);
-        a.setContentText("Cannot Connect To DataBase");
+        try {
+            Class.forName("org.sqlite.JDBC");
+            connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
+            System.out.print("SUP");
+        } catch (Exception e) {
+            Alert a = new Alert(AlertType.ERROR);
+            a.setContentText("Cannot Connect To DataBase");
 
-        // show the dialog
-        a.show();
-       }
-        
+            // show the dialog
+            a.show();
+        }
 
         // calls to have the data be added into the collection from files
         fillData();
@@ -100,7 +98,7 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setServiceDesc(t.getNewValue());
             try {
-                saveData();
+                saveData(5);
             } catch (IOException e1) {
             }
         });
@@ -114,7 +112,7 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setPartsUsed(t.getNewValue());
             try {
-                saveData();
+                saveData(5);
             } catch (IOException e1) {
             }
         });
@@ -136,7 +134,7 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setPartsCost(Double.parseDouble(t.getNewValue()));
             try {
-                saveData();
+                saveData(5);
             } catch (IOException e1) {
             }
         });
@@ -149,7 +147,7 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setLaborHours(Double.parseDouble(t.getNewValue()));
             try {
-                saveData();
+                saveData(5);
             } catch (IOException e1) {
             }
         });
@@ -163,7 +161,7 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setTotalCost(Double.parseDouble(t.getNewValue()));
             try {
-                saveData();
+                saveData(5);
             } catch (IOException e1) {
             }
         });
@@ -246,7 +244,7 @@ public class finalProject extends Application {
                     }
                     try {
 
-                        saveData();
+                        saveData(5);
                         serviceTable.setPlaceholder(new Label("No dealer has been selected"));
                         ObservableList<ServiceOrder> recorders = FXCollections.observableArrayList();
                         if (selectedDealerNames != "") {
@@ -349,7 +347,7 @@ public class finalProject extends Application {
                 makeColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow())).setMake(t.getNewValue());
                     try {
-                        saveData();
+                        saveData(1);
                     } catch (IOException e1) {
                     }
                 });
@@ -361,45 +359,57 @@ public class finalProject extends Application {
                 modelColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow())).setModel(t.getNewValue());
                     try {
-                        saveData();
+                        saveData(1);
                     } catch (IOException e1) {
                     }
                 });
 
-                TableColumn<Car, String> engineSizeColumn = new TableColumn<>("Engine Size");
-                engineSizeColumn.setMinWidth(200);
-                engineSizeColumn.setCellValueFactory(new PropertyValueFactory<>("engineSize"));
-                engineSizeColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
-                engineSizeColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
+                TableColumn<Car, String> yearColumn = new TableColumn<>("Year");
+                yearColumn.setMinWidth(200);
+                yearColumn.setCellValueFactory(new PropertyValueFactory<>("year"));
+                yearColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
+                yearColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                            .setEngineSize(t.getNewValue());
+                            .setYear(Integer.parseInt(t.getNewValue()));
                     try {
-                        saveData();
+                        saveData(1);
                     } catch (IOException e1) {
                     }
                 });
 
-                TableColumn<Car, String> transmissionTypeColumn = new TableColumn<>("Transmission Type");
-                transmissionTypeColumn.setMinWidth(200);
-                transmissionTypeColumn.setCellValueFactory(new PropertyValueFactory<>("transmissionType"));
-                transmissionTypeColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
-                transmissionTypeColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
+                TableColumn<Car, String> mileageColumn = new TableColumn<>("Mileage");
+                mileageColumn.setMinWidth(200);
+                mileageColumn.setCellValueFactory(new PropertyValueFactory<>("mileage"));
+                mileageColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
+                mileageColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                            .setTransmissionType(t.getNewValue());
+                            .setMileage(Integer.parseInt(t.getNewValue()));
                     try {
-                        saveData();
+                        saveData(1);
                     } catch (IOException e1) {
                     }
                 });
 
-                TableColumn<Car, String> optionsColumn = new TableColumn<>("Options");
-                optionsColumn.setMinWidth(400);
-                optionsColumn.setCellValueFactory(new PropertyValueFactory<>("options"));
-                optionsColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
-                optionsColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
-                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow())).setOptions(t.getNewValue());
+                TableColumn<Car, String> ownerColumn = new TableColumn<>("Owner");
+                ownerColumn.setMinWidth(400);
+                ownerColumn.setCellValueFactory(new PropertyValueFactory<>("owner"));
+                ownerColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
+                ownerColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
+                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow())).setOwner(t.getNewValue());
                     try {
-                        saveData();
+                        saveData(1);
+                    } catch (IOException e1) {
+                    }
+                });
+                TableColumn<Car, String> serviceDateColumn = new TableColumn<>("Service Date");
+                serviceDateColumn.setMinWidth(400);
+                serviceDateColumn.setCellValueFactory(new PropertyValueFactory<>("serviceDate"));
+                serviceDateColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
+                serviceDateColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
+                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                            .setServiceDate(t.getNewValue());
+                    try {
+                        saveData(1);
                     } catch (IOException e1) {
                     }
                 });
@@ -408,21 +418,24 @@ public class finalProject extends Application {
                 carTable.getColumns().add(VINColumn);
                 carTable.getColumns().add(makeColumn);
                 carTable.getColumns().add(modelColumn);
-                carTable.getColumns().add(engineSizeColumn);
-                carTable.getColumns().add(transmissionTypeColumn);
-                carTable.getColumns().add(optionsColumn);
+                carTable.getColumns().add(yearColumn);
+                carTable.getColumns().add(mileageColumn);
+                carTable.getColumns().add(ownerColumn);
+                carTable.getColumns().add(serviceDateColumn);
 
                 pane2.setPadding(new Insets(15, 15, 15, 15));
                 pane2.setHgap(5);
                 pane2.setVgap(5);
                 pane2.add(new Label("Vin: "), 0, 0);
                 pane2.add(vin, 1, 0);
-                pane2.add(new Label("Options: "), 2, 0);
-                pane2.add(options, 3, 0);
-                pane2.add(new Label("Engine Size: "), 2, 1);
-                pane2.add(engineSize, 3, 1);
-                pane2.add(new Label("Transmission Type: "), 2, 2);
-                pane2.add(transmissionType, 3, 2);
+                pane2.add(new Label("Year: "), 2, 0);
+                pane2.add(year, 3, 0);
+                pane2.add(new Label("Owner: "), 2, 1);
+                pane2.add(owner, 3, 1);
+                pane2.add(new Label("Service Date: "), 2, 2);
+                pane2.add(serviceDate, 3, 2);
+                pane2.add(new Label("Mileage: "), 2, 3);
+                pane2.add(mileage, 3, 3);
                 pane2.add(new Label("Make: "), 0, 1);
                 pane2.add(make, 1, 1);
                 pane2.add(new Label("Model: "), 0, 2);
@@ -449,22 +462,22 @@ public class finalProject extends Application {
                     @Override
                     public void handle(ActionEvent e) {
                         if (vin.getText().length() != 0 && make.getText().length() != 0 && model.getText().length() != 0
-                                && engineSize.getText().length() != 0 && transmissionType.getText().length() != 0
-                                && options.getText().length() != 0) {
+                                && year.getText().length() != 0 && owner.getText().length() != 0
+                                && mileage.getText().length() != 0) {
                             if (Cars.get(0).CheckVin(vin.getText())) {
-                                Cars.add(new Car(vin.getText(), make.getText(), model.getText(), engineSize.getText(),
-                                        transmissionType.getText(), options.getText()));
+                                Cars.add(new Car(vin.getText(), make.getText(), model.getText(),Integer.parseInt(year.getText()),
+                                Integer.parseInt(mileage.getText()), serviceDate.getText(), owner.getText()));
                                 try {
-                                    saveData();
+                                    saveData(1);
                                 } catch (IOException e1) {
                                 }
                                 // clearing all the old text after adding it to the list
                                 vin.clear();
                                 make.clear();
                                 model.clear();
-                                engineSize.clear();
-                                transmissionType.clear();
-                                options.clear();
+                                mileage.clear();
+                                owner.clear();
+                                year.clear();
                             } else {
                                 a.setContentText("The Vin is not vaild");
 
@@ -511,7 +524,7 @@ public class finalProject extends Application {
                     ((Dealership) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealerName(t.getNewValue());
                     try {
-                        saveData();
+                        saveData(3);
                     } catch (IOException e1) {
                     }
                 });
@@ -524,7 +537,7 @@ public class finalProject extends Application {
                     ((Dealership) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealerAddress(t.getNewValue());
                     try {
-                        saveData();
+                        saveData(3);
                     } catch (IOException e1) {
                     }
                 });
@@ -538,7 +551,7 @@ public class finalProject extends Application {
                     ((Dealership.ServiceTech) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealershipID(Integer.parseInt(t.getNewValue()));
                     try {
-                        saveData();
+                        saveData(6);
                     } catch (IOException e1) {
                     }
                 });
@@ -551,7 +564,7 @@ public class finalProject extends Application {
                     ((Dealership.ServiceTech) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setTechId(Integer.parseInt(t.getNewValue()));
                     try {
-                        saveData();
+                        saveData(6);
                     } catch (IOException e1) {
                     }
                 });
@@ -564,7 +577,7 @@ public class finalProject extends Application {
                     ((Dealership.ServiceTech) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setTechName(t.getNewValue());
                     try {
-                        saveData();
+                        saveData(6);
                     } catch (IOException e1) {
                     }
                 });
@@ -591,6 +604,8 @@ public class finalProject extends Application {
                 pane3.add(dealerName, 1, 0);
                 pane3.add(new Label("Dealer Address: "), 0, 1);
                 pane3.add(dealerAddress, 1, 1);
+                pane3.add(new Label("Dealer Phone Number: "), 0, 2);
+                pane3.add(dealerShipPhone, 1, 2);
 
                 pane4.add(dealerTable, 0, 4);
 
@@ -623,7 +638,7 @@ public class finalProject extends Application {
                                                 .get(Integer.parseInt(techDealershipID.getText()) - 1).new ServiceTech(
                                                         Integer.parseInt(techDealershipID.getText()),
                                                         techName.getText()));
-                                        saveData();
+                                        saveData(6);
                                         // clearing the textFeild
                                         techDealershipID.clear();
                                         techName.clear();
@@ -659,10 +674,10 @@ public class finalProject extends Application {
                             if (dealerName.getText() != " " && dealerAddress.getText() != " ") {
 
                                 try {
-                                    dealerships.add(new Dealership(dealerName.getText(), dealerAddress.getText()));
+                                    dealerships.add(new Dealership(dealerName.getText(), dealerAddress.getText(), dealerShipPhone.getText()));
                                     dealerName.clear();
                                     dealerAddress.clear();
-                                    saveData();
+                                    saveData(3);
                                 } catch (Exception f) {
                                     a.setContentText("There is an letter or word in the id spot");
                                     // show the dialog
@@ -717,118 +732,70 @@ public class finalProject extends Application {
 
     // takes the data from the txt file adds it to its collection
     static void fillData() throws IOException {
-        File dealerFile = new File("dealerData.txt");
-        File techFile = new File("ServiceTechData.txt");
-        File carFile = new File("carData.txt");
-        File ServiceOrder = new File("serviceOrderData.txt");
-        if (dealerFile.exists()) {
-            try (Scanner reader = new Scanner(dealerFile);) {
-                while (reader.hasNext()) {
-                    String dealerString = reader.nextLine();
-                    // int id = Integer.parseInt(dealerString.substring(0,
-                    // dealerString.indexOf('^')));
-                    dealerString = removeOldDataFromString(dealerString);
-                    String dealerName = (dealerString.substring(0, dealerString.indexOf('^')));
-                    dealerString = removeOldDataFromString(dealerString);
-                    String dealerAddress = (dealerString.substring(0, dealerString.indexOf('^')));
-                    dealerships.add(new Dealership(dealerName, dealerAddress));
+    Statement stmt = null;
+    try {
+        Class.forName("org.sqlite.JDBC");
+        connection = DriverManager.getConnection("jdbc:sqlite:test.db");
+        connection.setAutoCommit(false);
+        System.out.println("Opened database successfully");
 
-                }
-                reader.close();
-            }
-            if (techFile.exists()) {
-                try (Scanner reader = new Scanner(techFile);) {
-                    while (reader.hasNext()) {
-                        String techString = reader.nextLine();
-                        // int techId = Integer.parseInt(techString.substring(0,
-                        // techString.indexOf('^')));
-                        techString = removeOldDataFromString(techString);
-                        String techName = (techString.substring(0, techString.indexOf('^')));
-                        techString = removeOldDataFromString(techString);
-                        int dealerId = Integer.parseInt(techString.substring(0, techString.indexOf('^')));
+        stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery( "SELECT * FROM Car_Info;" );
+      
+         
+        while ( rs.next() ) {
+            String VIN = rs.getString("car_VIN");
+            String  model = rs.getString("address");
+            String  make = rs.getString("address");
+            int year = rs.getInt("");
+            int mileage = rs.getInt("");
+            String serviceDate = rs.getDate("serviceDate").toString();
+            
+            String owner = stmt.executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_firstName");
+            Cars.add(new Car(VIN, make, model,year,mileage, serviceDate, owner));
+           
+         }
+         rs.close();
+         stmt.close();
 
-                        ServiceTechs.add(dealerships.get(dealerId - 1).new ServiceTech(dealerId, techName));
-                    }
-                    reader.close();
-                }
-            }
-        }
-        if (carFile.exists()) {
-            try (Scanner reader = new Scanner(carFile);) {
-                while (reader.hasNext()) {
-                    String carString = reader.nextLine();
-                    String vin = (carString.substring(0, carString.indexOf('^')));
-                    carString = removeOldDataFromString(carString);
-                    String make = (carString.substring(0, carString.indexOf('^')));
-                    carString = removeOldDataFromString(carString);
-                    String model = (carString.substring(0, carString.indexOf('^')));
-                    carString = removeOldDataFromString(carString);
-                    String engineSize = (carString.substring(0, carString.indexOf('^')));
-                    carString = removeOldDataFromString(carString);
-                    String transmissionType = (carString.substring(0, carString.indexOf('^')));
-                    carString = removeOldDataFromString(carString);
-                    String options = (carString.substring(0, carString.indexOf('^')));
-
-                    Cars.add(new Car(vin, make, model, engineSize, transmissionType, options));
-                }
-                reader.close();
-            }
-            if (ServiceOrder.exists()) {
-                try (Scanner reader = new Scanner(ServiceOrder);) {
-                    while (reader.hasNext()) {
-                        String pastServiceOrderString = reader.nextLine();
-                        String carVIN = (pastServiceOrderString.substring(0, pastServiceOrderString.indexOf('^')));
-                        pastServiceOrderString = removeOldDataFromString(pastServiceOrderString);
-                        String serviceDesc = (pastServiceOrderString.substring(0, pastServiceOrderString.indexOf('^')));
-                        pastServiceOrderString = removeOldDataFromString(pastServiceOrderString);
-                        String partsUsed = (pastServiceOrderString.substring(0, pastServiceOrderString.indexOf('^')));
-                        pastServiceOrderString = removeOldDataFromString(pastServiceOrderString);
-                        int techID = Integer
-                                .parseInt(pastServiceOrderString.substring(0, pastServiceOrderString.indexOf('^')));
-                        pastServiceOrderString = removeOldDataFromString(pastServiceOrderString);
-                        int dealershipID = Integer
-                                .parseInt(pastServiceOrderString.substring(0, pastServiceOrderString.indexOf('^')));
-                        pastServiceOrderString = removeOldDataFromString(pastServiceOrderString);
-                        double partsCost = Double
-                                .parseDouble(pastServiceOrderString.substring(0, pastServiceOrderString.indexOf('^')));
-                        pastServiceOrderString = removeOldDataFromString(pastServiceOrderString);
-                        double totalCost = Double
-                                .parseDouble(pastServiceOrderString.substring(0, pastServiceOrderString.indexOf('^')));
-                        pastServiceOrderString = removeOldDataFromString(pastServiceOrderString);
-                        double laborHours = Double
-                                .parseDouble(pastServiceOrderString.substring(0, pastServiceOrderString.indexOf('^')));
-
-                        serviceOrders.add(new ServiceOrder(carVIN, serviceDesc, partsUsed, techID, dealershipID,
-                                partsCost, totalCost, laborHours));
-                    }
-                    reader.close();
-                }
-            }
-        }
+         stmt = connection.createStatement();
+         rs = stmt.executeQuery( "SELECT * FROM Dealership;" );
+       
+          
+         while ( rs.next() ) {
+             String VIN = rs.getString("car_VIN");
+             String  model = rs.getString("address");
+             String  make = rs.getString("address");
+             int year = rs.getInt("");
+             int mileage = rs.getInt("");
+             String serviceDate = rs.getDate("serviceDate").toString();
+             
+             String owner = stmt.executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_firstName");
+             Cars.add(new Car(VIN, make, model,year,mileage, serviceDate, owner));
+            
+          }
+          rs.close();
+          stmt.close();
+      } catch ( Exception e ) {
+         System.err.println( e.getClass().getName() + ": " + e.getMessage() + "CAR");
+         System.exit(0);
+      }
     }
 
     // saves the data that it has changed to the file that it needs
-    static void saveData() throws IOException {
-        String serviceOrdersString = "";
-        String dealershipsString = "";
-        String carsString = "";
-        String ServiceTechsString = "";
+    static void saveData(int loaction) throws IOException {
 
-        for (int i = 0; i < ServiceTechs.size(); i++)
-            ServiceTechsString = ServiceTechsString + ServiceTechs.get(i).formatForFile();
-        ServiceTechs.get(0).toFile(ServiceTechsString);
+        try {
+            // update statement
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "update Staff set lastName = ?, firstName = ?, mi = ?, address = ?, city = ?, state = ?, telephone = ?  where id = ?");
+            
+          
 
-        for (int i = 0; i < dealerships.size(); i++)
-            dealershipsString = dealershipsString + dealerships.get(i).formatForFile();
-        dealerships.get(0).toFile(dealershipsString);
-
-        for (int i = 0; i < serviceOrders.size(); i++)
-            serviceOrdersString = serviceOrdersString + serviceOrders.get(i).formatForFile();
-        serviceOrders.get(0).toFile(serviceOrdersString);
-
-        for (int i = 0; i < Cars.size(); i++)
-            carsString = carsString + Cars.get(i).formatForFile();
-        Cars.get(0).toFile(carsString);
+        } catch (SQLException e1) {
+            
+        
+        }
 
     }
 

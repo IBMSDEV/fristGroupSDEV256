@@ -1,23 +1,22 @@
-import java.io.IOException;
-import java.io.PrintWriter;
-
 public class Car{
     String vin;
     String make;
     String model;
-    String engineSize;
-    String transmissionType; 
-    String options;
+    int year;
+    int mileage; 
+    String owner;
+    String serviceDate;
     String fileString = "";
 
 
-    Car(String vin, String make, String model, String engineSize, String transmissionType, String options){
+    Car(String vin, String make, String model, int year, int mileage, String serviceDate, String owner){
         this.vin = vin;
         this.make = make;
         this.model = model;
-        this.engineSize = engineSize;
-        this.transmissionType = transmissionType; 
-        this.options = options;
+        this.year = year;
+        this.serviceDate = serviceDate;
+        this.mileage = mileage; 
+        this.owner = owner;
     }
     //getters
    public  String getVin(){
@@ -29,16 +28,18 @@ public class Car{
     public String getModel(){
         return this.model;
     }
-    public String getEngineSize(){
-        return this.engineSize;
+    public String getServiceDate(){
+        return this.serviceDate;
     }
-    public String getTransmissionType(){
-        return this.transmissionType;
+    public int getMileage(){
+        return this.mileage;
     }
-    public String getOptions(){
-        return this.options;
+    public int getYear(){
+        return this.year;
     }
-
+    public String getOwner(){
+        return this.owner;
+    }
     //setters 
     void setMake(String newMake){
          this.make = newMake;
@@ -46,16 +47,19 @@ public class Car{
     void setModel(String model){
         this.model = model;
     }
-    void setEngineSize(String engineSize){
-        this.engineSize= engineSize;
+    void setMileage(int mileage){
+        this.mileage= mileage;
     }
-    void setTransmissionType(String transmissionType){
-         this.transmissionType = transmissionType;
+    void setYear(int year){
+        this.year = year;
     }
-    void setOptions(String options){
-        this.options = options;
+    void setOwner(String owner){
+        this.owner = owner;
     }
-    
+    void  setServiceDate(String serviceDate){
+         this.serviceDate = serviceDate;
+    }
+
     //Makes sure that the letter in the 9th spot of the vin is a vaild Item and that the vin doesn't contain any letters that it should not
     Boolean CheckVin(String Vin){
         int [] weight = {8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2};
@@ -95,16 +99,6 @@ public class Car{
             
         }
 
-    }
-    String formatForFile(){
-        return this.vin + "^" + this.make + "^" +  this.model + "^"+ this.engineSize + "^" +this.transmissionType 
-        +  "^" + this.options + "^\n";
-    }
-    public void toFile(String fileString) throws IOException{
-        try (PrintWriter output = new PrintWriter("carData.txt");) {
-            output.write(fileString);
-            output.close();
-        }
     }
 
 }

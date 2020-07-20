@@ -6,21 +6,28 @@ public class Dealership{
     public int dealershipID;
     public String dealerName;
     public String dealerAddress;
+    public String dealerPhoneNumber;
     public String fileString = "";
     public int ServiceTechCount = 0;
 
     //set the information the if supplied 
-    Dealership(String name, String address ){
+    Dealership(String name, String address, String dealerPhoneNumber ){
         dealershipIDCount++;
         this.dealershipID = dealershipIDCount;
         this.dealerName = name;
         this.dealerAddress = address;
+        this.dealerPhoneNumber = dealerPhoneNumber;
     }
     //gets the ID
     public int getDealershipID(){
         return this.dealershipID;
     }
-
+    public String getDealerPhoneNumber(){
+        return this.dealerPhoneNumber;
+    }
+    void setDealerPhoneNumber(String dealerPhoneNumber){
+        this.dealerPhoneNumber = dealerPhoneNumber;
+    }
     public String getDealerName(){
         return this.dealerName;
     }
