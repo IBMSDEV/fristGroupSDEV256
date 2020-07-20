@@ -15,9 +15,8 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.util.Scanner;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+//TODO CHANGE THIS FROM * TO WHAT IS NEEDED BECAUSE IT IS BAD FOR IT TO BE *
+import java.sql.*;
 
 //Temp because of No DB allows for adding to a file close by
 import java.io.File;
