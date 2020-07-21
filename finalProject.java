@@ -63,8 +63,9 @@ public class finalProject extends Application {
 
     public void start(Stage primaryStage) throws IOException, SQLException, ClassNotFoundException {
         try {
-            Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
+            
+            // calls to have the data be added into the collection from files
+            fillData();
             System.out.print("SUP");
         } catch (Exception e) {
             Alert a = new Alert(AlertType.ERROR);
@@ -74,8 +75,8 @@ public class finalProject extends Application {
             a.show();
         }
 
-        // calls to have the data be added into the collection from files
-        fillData();
+        
+       
         // the making a table
         TableView<ServiceOrder> serviceTable = new TableView<ServiceOrder>();
         // allowing the table to be able to be edited
@@ -747,32 +748,33 @@ public class finalProject extends Application {
 
     // takes the data from the txt file adds it to its collection
     static void fillData() throws IOException {
-    Statement stmt = null;
+    
+
     try {
         Class.forName("org.sqlite.JDBC");
         connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
         connection.setAutoCommit(false);
         System.out.println("Opened database successfully");
+        Statement stmt = null;
 
         stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery( "SELECT * FROM Car_Info;" );
       
           //adding Cars to the Software store
         while ( rs.next() ) {
-            String VIN = rs.getString("car_VIN");
+            
             String  model = rs.getString("car_model");
             String  make = rs.getString("car_make");
+            String VIN = rs.getString("car_VIN");
             int year = rs.getInt("car_year");
             int mileage = rs.getInt("car_mileage");
-            String serviceDate = rs.getDate("serviceDate").toString();
+            String serviceDate = null;
             
-            String owner = stmt.executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_firstName");
+            String owner = stmt.executeQuery("select owner_firstName from Car_Owner where owner_ID = " + .getInt("owner_ID")).getString("owner_firstName");
             Cars.add(new Car(VIN, make, model,year,mileage, serviceDate, owner));
            
          }
-         rs.close();
-         stmt.close();
-
+        
          stmt = connection.createStatement();
          rs = stmt.executeQuery( "SELECT * FROM Dealership;" );
        
@@ -783,9 +785,7 @@ public class finalProject extends Application {
              String  dealer_phoneNum = rs.getString("dealer_phoneNum");
              dealerships.add(new Dealership(dealer_Name, dealer_address, dealer_phoneNum));
           }
-          rs.close();
-          stmt.close();
-
+      
             stmt = connection.createStatement();
             rs = stmt.executeQuery( "SELECT * FROM Service_Techs;" );
        
@@ -796,8 +796,7 @@ public class finalProject extends Application {
              
              ServiceTechs.add(dealerships.get(dealer_ID - 1).new ServiceTech(dealer_ID, techName));
           }
-          rs.close();
-          stmt.close();
+          
             //adding Service_Info to the Software store
           stmt = connection.createStatement();
           rs = stmt.executeQuery( "SELECT * FROM Service_Info;" );
@@ -807,6 +806,7 @@ public class finalProject extends Application {
             int techID = rs.getInt("tech_ID");
             int dealershipID = rs.getInt("dealer_ID");
             String carVIN = rs.getString("car_VIN");
+            
             String partsUsed = rs.getString("parts_used");
             String serviceDesc = rs.getString("service_description");
             double partsCost = rs.getDouble("cost_of_parts");
@@ -814,11 +814,14 @@ public class finalProject extends Application {
             double laborHours = rs.getDouble("labor_hours");
 
             serviceOrders.add(new ServiceOrder(carVIN, serviceDesc, serviceDate, partsUsed, techID, dealershipID, partsCost, totalCost, laborHours));
+            rs.close();
+            stmt.close();
          }
           
       } catch ( Exception e ) {
-         System.err.println( "PLEASE HELP ME");
+         System.err.println( "PLEASE HELP ME: " + e);
       }
+     
     }
     
     static void addData(int loaction) throws IOException {
