@@ -759,7 +759,7 @@ public class finalProject extends Application {
 
         stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery( "SELECT * FROM Car_Info;" );
-        
+         
           //adding Cars to the Software store
         while ( rs.next() ) {
         
@@ -802,7 +802,7 @@ public class finalProject extends Application {
           rs = stmt.executeQuery( "SELECT * FROM Service_Info;" );
 
           while ( rs.next() ) {
-            String serviceDate = rs.getDate("service_date").toString();
+            String serviceDate = null;
             int techID = rs.getInt("tech_ID");
             int dealershipID = rs.getInt("dealer_ID");
             String carVIN = rs.getString("car_VIN");
