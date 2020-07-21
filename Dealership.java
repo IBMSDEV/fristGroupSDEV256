@@ -99,17 +99,7 @@ public class Dealership{
             this.techID = newTechID;
         }
         
-        String formatForFile(){
-           return this.techID +"^" + this.techName + "^" + dealershipID + "^\n" ;
-        }
-        public void toFile(String fileString) throws IOException{
-             
-            try (PrintWriter output = new PrintWriter("ServiceTechData.txt");) {
-                output.write(fileString);
-                output.close();
-            }
-    
-        }
+      
 
     }
 

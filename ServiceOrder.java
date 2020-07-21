@@ -3,6 +3,7 @@ import java.io.PrintWriter;
 
 
 public class ServiceOrder{
+    static public int serviceNumber = 0;
     public String carVIN;
     String serviceDesc;
     String partsUsed;
@@ -12,11 +13,15 @@ public class ServiceOrder{
     double totalCost;
     double laborHours;
     String fileString = "";
+    String serviceDate;
+
     //A empty service order with just the vin, techID, and dealershipID for cars that just came in so not much is know
-    ServiceOrder(String carVIN, int techID, int dealershipID){
+    ServiceOrder(String carVIN, int techID, int dealershipID, String serviceDate){
+        serviceNumber++;
         this.carVIN = carVIN;
         this.techID = techID;
         this.dealershipID = dealershipID;
+        this.serviceDate = serviceDate;
         this.serviceDesc = "None";
         this.partsUsed = "None";
         this.partsCost = 0;
@@ -24,7 +29,9 @@ public class ServiceOrder{
         this.laborHours = 0;
     }
     // a service order for when a car is leaving the service department
-    ServiceOrder(String carVIN, String serviceDesc, String partsUsed, int techID, int dealershipID, double partsCost, double totalCost, double laborHours){
+    ServiceOrder(String carVIN, String serviceDesc, String serviceDate, String partsUsed, int techID, int dealershipID, double partsCost, double totalCost, double laborHours){
+        serviceNumber++;
+        this.serviceDate = serviceDate;
         this.carVIN = carVIN;
         this.serviceDesc = serviceDesc;
         this.partsUsed = partsUsed;
@@ -70,7 +77,9 @@ public class ServiceOrder{
     public String getTableTotalCost(){
         return Double.toString(this.totalCost);
     }
-
+    public static int getServiceNumber() {
+        return serviceNumber;
+    }
     //setters
     void setServiceDesc(String serviceDesc){
         this.serviceDesc = serviceDesc;
@@ -88,15 +97,5 @@ public class ServiceOrder{
         this.totalCost = totalCost;
     }
     
-    String formatForFile(){
-        return this.carVIN + "^" + this.serviceDesc + "^" +  this.partsUsed + "^" + this.techID + "^"+ this.dealershipID + "^" + + this.partsCost + "^"
-        + this.totalCost +  "^"  + this.laborHours + "^\n";
-    }
-    public void toFile(String fileString) throws IOException{
-        try (PrintWriter output = new PrintWriter("serviceOrderData.txt");) {
-            output.write(fileString);
-            output.close();
-        }
-    }
   
 }

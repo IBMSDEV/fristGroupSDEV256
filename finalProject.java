@@ -200,6 +200,7 @@ public class finalProject extends Application {
         TextField CarVin = new TextField();
         TextField SOtechID = new TextField();
         TextField SOtechDealershipID = new TextField();
+        TextField Date = new TextField();
         textFeildsPane.add(
                 new Label("Feilds with * are optional. For the * feilds to be save all * need to be filled: "), 1, 3);
         textFeildsPane.add(new Label("Cars VIN That is getting service: "), 0, 4);
@@ -228,14 +229,15 @@ public class finalProject extends Application {
                                 && hoursLabor.getText().length() != 0 && ServiceDesc.getText().length() != 0
                                 && partsUsed.getText().length() != 0) {
 
-                            serviceOrders.add(new ServiceOrder(CarVin.getText(), ServiceDesc.getText(),
+
+                            serviceOrders.add(new ServiceOrder(CarVin.getText(), ServiceDesc.getText(), Date.getText(),
                                     partsUsed.getText(), Integer.parseInt(SOtechID.getText()),
                                     Integer.parseInt(SOtechDealershipID.getText()),
                                     Double.parseDouble(partCost.getText()), Double.parseDouble(totalCost.getText()),
                                     Double.parseDouble(hoursLabor.getText())));
                         } else
                             serviceOrders.add(new ServiceOrder(CarVin.getText(), Integer.parseInt(SOtechID.getText()),
-                                    Integer.parseInt(SOtechDealershipID.getText())));
+                                    Integer.parseInt(SOtechDealershipID.getText()), Date.getText()));
 
                     } catch (java.lang.NumberFormatException e2) {
                         a.setContentText("There is an letter or word in the id spot");
@@ -541,6 +543,18 @@ public class finalProject extends Application {
                     } catch (IOException e1) {
                     }
                 });
+                TableColumn<Dealership, String> dealerPhoneColumn = new TableColumn<>("Dealer Phone Number");
+                dealerPhoneColumn.setMinWidth(200);
+                dealerPhoneColumn.setCellValueFactory(new PropertyValueFactory<>("dealerPhoneNumber"));
+                dealerPhoneColumn.setCellFactory(TextFieldTableCell.<Dealership>forTableColumn());
+                dealerPhoneColumn.setOnEditCommit((CellEditEvent<Dealership, String> t) -> {
+                    ((Dealership) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                            .setDealerPhoneNumber(t.getNewValue());
+                    try {
+                        saveData(3);
+                    } catch (IOException e1) {
+                    }
+                });
 
                 // Table Columns and sizes for the dealer Table
                 TableColumn<Dealership.ServiceTech, String> dealershipIDColumn = new TableColumn<>("Dealer ID");
@@ -587,6 +601,7 @@ public class finalProject extends Application {
                 dealerTable.getColumns().add(dealerIDColumn);
                 dealerTable.getColumns().add(dealerNameColumn);
                 dealerTable.getColumns().add(dealerAddressColumn);
+                dealerTable.getColumns().add(dealerPhoneColumn);
                 dealerTable.setItems(dealerships);
                 // adding columns and data to the tech table
                 techTable.getColumns().add(dealershipIDColumn);
@@ -638,7 +653,7 @@ public class finalProject extends Application {
                                                 .get(Integer.parseInt(techDealershipID.getText()) - 1).new ServiceTech(
                                                         Integer.parseInt(techDealershipID.getText()),
                                                         techName.getText()));
-                                        saveData(6);
+                                        addData(6);
                                         // clearing the textFeild
                                         techDealershipID.clear();
                                         techName.clear();
@@ -677,7 +692,7 @@ public class finalProject extends Application {
                                     dealerships.add(new Dealership(dealerName.getText(), dealerAddress.getText(), dealerShipPhone.getText()));
                                     dealerName.clear();
                                     dealerAddress.clear();
-                                    saveData(3);
+                                    addData(3);
                                 } catch (Exception f) {
                                     a.setContentText("There is an letter or word in the id spot");
                                     // show the dialog
@@ -735,20 +750,20 @@ public class finalProject extends Application {
     Statement stmt = null;
     try {
         Class.forName("org.sqlite.JDBC");
-        connection = DriverManager.getConnection("jdbc:sqlite:test.db");
+        connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
         connection.setAutoCommit(false);
         System.out.println("Opened database successfully");
 
         stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery( "SELECT * FROM Car_Info;" );
       
-         
+          //adding Cars to the Software store
         while ( rs.next() ) {
             String VIN = rs.getString("car_VIN");
-            String  model = rs.getString("address");
-            String  make = rs.getString("address");
-            int year = rs.getInt("");
-            int mileage = rs.getInt("");
+            String  model = rs.getString("car_model");
+            String  make = rs.getString("car_make");
+            int year = rs.getInt("car_year");
+            int mileage = rs.getInt("car_mileage");
             String serviceDate = rs.getDate("serviceDate").toString();
             
             String owner = stmt.executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_firstName");
@@ -761,25 +776,65 @@ public class finalProject extends Application {
          stmt = connection.createStatement();
          rs = stmt.executeQuery( "SELECT * FROM Dealership;" );
        
-          
+        //adding Dealer to the Software store
          while ( rs.next() ) {
-             String VIN = rs.getString("car_VIN");
-             String  model = rs.getString("address");
-             String  make = rs.getString("address");
-             int year = rs.getInt("");
-             int mileage = rs.getInt("");
-             String serviceDate = rs.getDate("serviceDate").toString();
-             
-             String owner = stmt.executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_firstName");
-             Cars.add(new Car(VIN, make, model,year,mileage, serviceDate, owner));
-            
+             String dealer_Name = rs.getString("dealer_name");
+             String  dealer_address = rs.getString("dealer_address");
+             String  dealer_phoneNum = rs.getString("dealer_phoneNum");
+             dealerships.add(new Dealership(dealer_Name, dealer_address, dealer_phoneNum));
           }
           rs.close();
           stmt.close();
+
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery( "SELECT * FROM Service_Techs;" );
+       
+          //adding TECHS to the Software store
+         while ( rs.next() ) {
+             int dealer_ID = rs.getInt("dealer_ID");
+             String  techName = rs.getString("tech_Name");
+             
+             ServiceTechs.add(dealerships.get(dealer_ID - 1).new ServiceTech(dealer_ID, techName));
+          }
+          rs.close();
+          stmt.close();
+            //adding Service_Info to the Software store
+          stmt = connection.createStatement();
+          rs = stmt.executeQuery( "SELECT * FROM Service_Info;" );
+
+          while ( rs.next() ) {
+            String serviceDate = rs.getDate("service_date").toString();
+            int techID = rs.getInt("tech_ID");
+            int dealershipID = rs.getInt("dealer_ID");
+            String carVIN = rs.getString("car_VIN");
+            String partsUsed = rs.getString("parts_used");
+            String serviceDesc = rs.getString("service_description");
+            double partsCost = rs.getDouble("cost_of_parts");
+            double totalCost = rs.getDouble("cost_of_service");
+            double laborHours = rs.getDouble("labor_hours");
+
+            serviceOrders.add(new ServiceOrder(carVIN, serviceDesc, serviceDate, partsUsed, techID, dealershipID, partsCost, totalCost, laborHours));
+         }
+          
       } catch ( Exception e ) {
-         System.err.println( e.getClass().getName() + ": " + e.getMessage() + "CAR");
-         System.exit(0);
+         System.err.println( "PLEASE HELP ME");
       }
+    }
+    
+    static void addData(int loaction) throws IOException {
+
+        try {
+            // update statement
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "update Staff set lastName = ?, firstName = ?, mi = ?, address = ?, city = ?, state = ?, telephone = ?  where id = ?");
+            
+          
+
+        } catch (SQLException e1) {
+            
+        
+        }
+
     }
 
     // saves the data that it has changed to the file that it needs
