@@ -753,16 +753,16 @@ public class finalProject extends Application {
     try {
         Class.forName("org.sqlite.JDBC");
         connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
-        connection.setAutoCommit(false);
+        //connection.setAutoCommit(false);
         System.out.println("Opened database successfully");
         Statement stmt = null;
 
         stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery( "SELECT * FROM Car_Info;" );
-      
+        
           //adding Cars to the Software store
         while ( rs.next() ) {
-            
+        
             String  model = rs.getString("car_model");
             String  make = rs.getString("car_make");
             String VIN = rs.getString("car_VIN");
@@ -770,7 +770,7 @@ public class finalProject extends Application {
             int mileage = rs.getInt("car_mileage");
             String serviceDate = null;
             
-            String owner = stmt.executeQuery("select owner_firstName from Car_Owner where owner_ID = " + .getInt("owner_ID")).getString("owner_firstName");
+            String owner = stmt.executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_firstName");
             Cars.add(new Car(VIN, make, model,year,mileage, serviceDate, owner));
            
          }

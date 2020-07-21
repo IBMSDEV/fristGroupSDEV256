@@ -1,7 +1,3 @@
-import java.io.IOException;
-import java.io.PrintWriter;
-
-
 public class ServiceOrder{
     static public int serviceNumber = 0;
     public String carVIN;
