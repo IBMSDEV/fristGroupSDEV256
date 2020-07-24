@@ -346,64 +346,24 @@ public class finalProject extends Application {
                 TableColumn<Car, String> makeColumn = new TableColumn<>("Make");
                 makeColumn.setMinWidth(200);
                 makeColumn.setCellValueFactory(new PropertyValueFactory<>("make"));
-                makeColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
-                makeColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
-                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow())).setMake(t.getNewValue());
-                    try {
-                        saveData(1);
-                    } catch (IOException e1) {
-                    }
-                });
 
                 TableColumn<Car, String> modelColumn = new TableColumn<>("Model");
                 modelColumn.setMinWidth(200);
                 modelColumn.setCellValueFactory(new PropertyValueFactory<>("model"));
-                modelColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
-                modelColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
-                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow())).setModel(t.getNewValue());
-                    try {
-                        saveData(1);
-                    } catch (IOException e1) {
-                    }
-                });
+
 
                 TableColumn<Car, String> yearColumn = new TableColumn<>("Year");
                 yearColumn.setMinWidth(200);
                 yearColumn.setCellValueFactory(new PropertyValueFactory<>("year"));
-                yearColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
-                yearColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
-                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                            .setYear(Integer.parseInt(t.getNewValue()));
-                    try {
-                        saveData(1);
-                    } catch (IOException e1) {
-                    }
-                });
 
-                TableColumn<Car, String> mileageColumn = new TableColumn<>("Mileage");
+                TableColumn<Car, Number> mileageColumn = new TableColumn<>("Mileage");
                 mileageColumn.setMinWidth(200);
                 mileageColumn.setCellValueFactory(new PropertyValueFactory<>("mileage"));
-                mileageColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
-                mileageColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
-                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                            .setMileage(Integer.parseInt(t.getNewValue()));
-                    try {
-                        saveData(1);
-                    } catch (IOException e1) {
-                    }
-                });
 
                 TableColumn<Car, String> ownerColumn = new TableColumn<>("Owner");
                 ownerColumn.setMinWidth(400);
                 ownerColumn.setCellValueFactory(new PropertyValueFactory<>("owner"));
-                ownerColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
-                ownerColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
-                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow())).setOwner(t.getNewValue());
-                    try {
-                        saveData(1);
-                    } catch (IOException e1) {
-                    }
-                });
+
                 TableColumn<Car, String> serviceDateColumn = new TableColumn<>("Service Date");
                 serviceDateColumn.setMinWidth(400);
                 serviceDateColumn.setCellValueFactory(new PropertyValueFactory<>("serviceDate"));
@@ -424,7 +384,7 @@ public class finalProject extends Application {
                 carTable.getColumns().add(yearColumn);
                 carTable.getColumns().add(mileageColumn);
                 carTable.getColumns().add(ownerColumn);
-                carTable.getColumns().add(serviceDateColumn);
+                // carTable.getColumns().add(serviceDateColumn);
 
                 pane2.setPadding(new Insets(15, 15, 15, 15));
                 pane2.setHgap(5);
@@ -449,7 +409,8 @@ public class finalProject extends Application {
                 pane2.add(addButton, 0, 3);
 
                 carTable.setItems(Cars);
-
+                System.out.println(Cars.toString());
+                
                 scenePane.setTop(pane2);
                 scenePane.setBottom(carTable);
                 // goes back to the other scene
@@ -751,18 +712,20 @@ public class finalProject extends Application {
     
 
     try {
-        Class.forName("org.sqlite.JDBC");
+        //Class.forName("org.sqlite.JDBC");
         connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
         //connection.setAutoCommit(false);
         System.out.println("Opened database successfully");
         Statement stmt = null;
 
         stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery( "SELECT * FROM Car_Info;" );
+        ResultSet rs = connection.createStatement().executeQuery( "SELECT * from Car_Info;" );
          
           //adding Cars to the Software store
+          int x = 1;
         while ( rs.next() ) {
-        
+            System.out.println(x);
+
             String  model = rs.getString("car_model");
             String  make = rs.getString("car_make");
             String VIN = rs.getString("car_VIN");
@@ -770,13 +733,14 @@ public class finalProject extends Application {
             int mileage = rs.getInt("car_mileage");
             String serviceDate = null;
             
-            String owner = stmt.executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_firstName");
+            String owner = connection.createStatement().executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_firstName");
             Cars.add(new Car(VIN, make, model,year,mileage, serviceDate, owner));
-           
+            
+            Thread.sleep(1500); 
+            x++;
          }
         
-         stmt = connection.createStatement();
-         rs = stmt.executeQuery( "SELECT * FROM Dealership;" );
+         rs = connection.createStatement().executeQuery( "SELECT * FROM Dealership;" );
        
         //adding Dealer to the Software store
          while ( rs.next() ) {
@@ -786,7 +750,6 @@ public class finalProject extends Application {
              dealerships.add(new Dealership(dealer_Name, dealer_address, dealer_phoneNum));
           }
       
-            stmt = connection.createStatement();
             rs = stmt.executeQuery( "SELECT * FROM Service_Techs;" );
        
           //adding TECHS to the Software store
@@ -798,7 +761,6 @@ public class finalProject extends Application {
           }
           
             //adding Service_Info to the Software store
-          stmt = connection.createStatement();
           rs = stmt.executeQuery( "SELECT * FROM Service_Info;" );
 
           while ( rs.next() ) {
@@ -819,7 +781,7 @@ public class finalProject extends Application {
          }
           
       } catch ( Exception e ) {
-         System.err.println( "PLEASE HELP ME: " + e);
+         System.out.println( "PLEASE HELP ME: " + e);
       }
      
     }
