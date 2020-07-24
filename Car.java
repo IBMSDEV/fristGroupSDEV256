@@ -40,6 +40,10 @@ public class Car{
     public String getOwner(){
         return this.owner;
     }
+    public String getTableMileage(){
+        return Integer.toString(this.mileage);
+    }
+
     //setters 
     void setMake(String newMake){
          this.make = newMake;
@@ -47,8 +51,8 @@ public class Car{
     void setModel(String model){
         this.model = model;
     }
-    void setMileage(String mileage){
-        this.mileage = Integer.parseInt(mileage);
+    void setMileage(int mileage){
+        this.mileage = (mileage);
     }
     void setYear(int year){
         this.year = year;

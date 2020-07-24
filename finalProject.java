@@ -358,11 +358,11 @@ public class finalProject extends Application {
 
                 TableColumn<Car, String> mileageColumn = new TableColumn<>("Mileage");
                 mileageColumn.setMinWidth(200);
-                mileageColumn.setCellValueFactory(new PropertyValueFactory<>("mileage"));
+                mileageColumn.setCellValueFactory(new PropertyValueFactory<>("tableMileage"));
                 mileageColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
                 mileageColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
                  ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                    .setMileage((t.getNewValue()));
+                    .setMileage(Integer.parseInt(t.getNewValue()));
                     try {
                         saveData(5);
                         } catch (IOException e1) {
