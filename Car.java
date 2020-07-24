@@ -47,8 +47,8 @@ public class Car{
     void setModel(String model){
         this.model = model;
     }
-    void setMileage(int mileage){
-        this.mileage= mileage;
+    void setMileage(String mileage){
+        this.mileage = Integer.parseInt(mileage);
     }
     void setYear(int year){
         this.year = year;
