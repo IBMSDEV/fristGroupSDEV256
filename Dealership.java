@@ -3,6 +3,7 @@ import java.io.PrintWriter;
 
 public class Dealership{
     static public int dealershipIDCount = 0;
+    static public int totalTechNumber = 0;
     public int dealershipID;
     public String dealerName;
     public String dealerAddress;
@@ -56,18 +57,20 @@ public class Dealership{
    
     //Service Tech is inside of the dealership class because it lets the more easily be linked together for the information to be shared between them
     public class ServiceTech{
-        
+        public int DBtechNum;
         public int dealershipID;
         public int techID;
         private String techName;
         String fileString = "";
 
         //set the information the if supplied 
-        protected ServiceTech(int dealershipID, String techName ){
+        protected ServiceTech(int dealershipID, String techName){
             ServiceTechCount++;
+            totalTechNumber++;
             this.dealershipID = dealershipID;
             this.techName = techName;
             this.techID = ServiceTechCount;
+            this.DBtechNum = totalTechNumber;
         }
         //gets the ID
         public  int getDealershipID(){
@@ -80,6 +83,7 @@ public class Dealership{
         void setDealershipID(int newID){
             this.dealershipID = newID;
         }
+        
     
         public String getTechName(){
             return this.techName;
@@ -99,7 +103,9 @@ public class Dealership{
             this.techID = newTechID;
         }
         
-      
+        public int getDBtechNum(){
+            return this.DBtechNum;
+        }
 
     }
 

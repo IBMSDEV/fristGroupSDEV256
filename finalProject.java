@@ -16,10 +16,9 @@ import java.io.IOException;
 
 //TODO CHANGE THIS FROM * TO WHAT IS NEEDED BECAUSE IT IS BAD FOR IT TO BE *
 import java.sql.*;
-import javax.crypto.SecretKey;
+
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -81,7 +80,7 @@ public class finalProject extends Application {
             a.show();
         }
         try {
-            
+
             // calls to have the data be added into the collection from files
             fillData();
             System.out.print("SUP");
@@ -115,8 +114,15 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setServiceDesc(t.getNewValue());
             try {
-                saveData(5);
-            } catch (IOException e1) {
+                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info service_description = ? where service_num = ?");
+                preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getServiceDesc());
+                preparedStatement.setInt(2, (t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
+                preparedStatement.executeUpdate();
+            } catch (SQLException e1) {
+                Alert a = new Alert(AlertType.ERROR);
+                a.setContentText("update ERROR");
+                // show the dialog
+                a.show();
             }
         });
 
@@ -128,10 +134,17 @@ public class finalProject extends Application {
         partsUsedColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setPartsUsed(t.getNewValue());
-            try {
-                saveData(5);
-            } catch (IOException e1) {
-            }
+                    try {
+                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info parts_used = ? where service_num = ?");
+                        preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getPartsUsed());
+                        preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
+                        preparedStatement.executeUpdate();
+                    } catch (SQLException e1) {
+                        Alert a = new Alert(AlertType.ERROR);
+                        a.setContentText("update ERROR");
+                        // show the dialog
+                        a.show();
+                    }
         });
 
         TableColumn<ServiceOrder, String> TechIDColumn = new TableColumn<>("Tech ID");
@@ -150,10 +163,17 @@ public class finalProject extends Application {
         costPartsColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setPartsCost(Double.parseDouble(t.getNewValue()));
-            try {
-                saveData(5);
-            } catch (IOException e1) {
-            }
+                    try {
+                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info cost_of_parts = ? where service_num = ?");
+                        preparedStatement.setDouble(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getPartsCost());
+                        preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
+                        preparedStatement.executeUpdate();
+                    } catch (SQLException e1) {
+                        Alert a = new Alert(AlertType.ERROR);
+                        a.setContentText("update ERROR");
+                        // show the dialog
+                        a.show();
+                    }
         });
         TableColumn<ServiceOrder, String> LaborHoursColumn = new TableColumn<>("Hours of Labor");
         LaborHoursColumn.setMinWidth(100);
@@ -163,10 +183,17 @@ public class finalProject extends Application {
         LaborHoursColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setLaborHours(Double.parseDouble(t.getNewValue()));
-            try {
-                saveData(5);
-            } catch (IOException e1) {
-            }
+                    try {
+                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info labor_hours = ? where service_num = ?");
+                        preparedStatement.setDouble(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getLaborHours());
+                        preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
+                        preparedStatement.executeUpdate();
+                    } catch (SQLException e1) {
+                        Alert a = new Alert(AlertType.ERROR);
+                        a.setContentText("update ERROR");
+                        // show the dialog
+                        a.show();
+                    }
         });
         TableColumn<ServiceOrder, String> totalCostColumn = new TableColumn<>("Total Cost");
         totalCostColumn.setMinWidth(100);
@@ -177,10 +204,17 @@ public class finalProject extends Application {
         totalCostColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setTotalCost(Double.parseDouble(t.getNewValue()));
-            try {
-                saveData(5);
-            } catch (IOException e1) {
-            }
+                    try {
+                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info cost_of_service = ? where service_num = ?");
+                        preparedStatement.setDouble(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getTotalCost());
+                        preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
+                        preparedStatement.executeUpdate();
+                    } catch (SQLException e1) {
+                        Alert a = new Alert(AlertType.ERROR);
+                        a.setContentText("update ERROR");
+                        // show the dialog
+                        a.show();
+                    }
         });
         // end of Table Columns
 
@@ -251,18 +285,39 @@ public class finalProject extends Application {
                                     Integer.parseInt(SOtechDealershipID.getText()),
                                     Double.parseDouble(partCost.getText()), Double.parseDouble(totalCost.getText()),
                                     Double.parseDouble(hoursLabor.getText())));
+
+                                    PreparedStatement preparedStatement = connection.prepareStatement( "INSERT INTO Service_Info (car_VIN, dealer_ID, tech_ID, service_date, service_description, parts_used, cost_of_parts, cost_of_service, labor_hours)" 
+                                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                                    preparedStatement.setString(1, CarVin.getText());
+                                    preparedStatement.setInt(2, Integer.parseInt(SOtechDealershipID.getText()));
+                                    preparedStatement.setInt(3, Integer.parseInt(SOtechID.getText()));
+                                    preparedStatement.setString(4, Date.getText());
+                                    preparedStatement.setString(5, ServiceDesc.getText());
+                                    preparedStatement.setString(6, partsUsed.getText());
+                                    preparedStatement.setDouble(7, Double.parseDouble(partCost.getText()));
+                                    preparedStatement.setDouble(8, Double.parseDouble(totalCost.getText()));
+                                    preparedStatement.setDouble(9, Double.parseDouble(hoursLabor.getText()));
+
                         } else
                             serviceOrders.add(new ServiceOrder(CarVin.getText(), Integer.parseInt(SOtechID.getText()),
                                     Integer.parseInt(SOtechDealershipID.getText()), Date.getText()));
+                                PreparedStatement preparedStatement = connection.prepareStatement( "INSERT INTO Service_Info (car_VIN, dealer_ID, tech_ID, service_date)" 
+                            +"VALUES (?, ?, ?, ?)");
+                            preparedStatement.setString(1, CarVin.getText());
+                            preparedStatement.setInt(2, Integer.parseInt(SOtechDealershipID.getText()));
+                            preparedStatement.setInt(3, Integer.parseInt(SOtechID.getText()));
+                            preparedStatement.setString(4, Date.getText());
 
                     } catch (java.lang.NumberFormatException e2) {
                         a.setContentText("There is an letter or word in the id spot");
                         // show the dialog
                         a.show();
-                    }
+                    } catch (SQLException e1) {
+						a.setContentText("ADDING ERROR");
+                        // show the dialog
+                        a.show();
+					}
                     try {
-
-                        saveData(5);
                         serviceTable.setPlaceholder(new Label("No dealer has been selected"));
                         ObservableList<ServiceOrder> recorders = FXCollections.observableArrayList();
                         if (selectedDealerNames != "") {
@@ -285,7 +340,7 @@ public class finalProject extends Application {
                             // show those orders
                             serviceTable.setItems(recorders);
                         }
-                    } catch (IOException e1) {
+                    } catch (Exception e1) {
 
                     }
                     // clearing all the old text after adding it to the list
@@ -377,10 +432,17 @@ public class finalProject extends Application {
                 mileageColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setMileage(Integer.parseInt(t.getNewValue()));
-                    try {
-                        saveData(5);
-                    } catch (IOException e1) {
-                    }
+                            try {
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Car_Info car_mileage = ? where car_VIN = ?");
+                                preparedStatement.setInt(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getMileage());
+                                preparedStatement.setString(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getVin()));
+                                preparedStatement.executeUpdate();
+                            } catch (SQLException e1) {
+                                Alert a = new Alert(AlertType.ERROR);
+                                a.setContentText("update ERROR");
+                                // show the dialog
+                                a.show();
+                            }
                 });
 
                 TableColumn<Car, String> ownerColumn = new TableColumn<>("Owner");
@@ -389,10 +451,17 @@ public class finalProject extends Application {
                 ownerColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
                 ownerColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow())).setOwner(t.getNewValue());
-                    try {
-                        saveData(1);
-                    } catch (IOException e1) {
-                    }
+                    //  try {
+                    //             PreparedStatement preparedStatement = connection.prepareStatement("update Car_Info car_mileage = ? where car_VIN = ?");
+                    //             preparedStatement.setInt(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getMileage());
+                    //             preparedStatement.setString(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getVin()));
+                    //             preparedStatement.executeUpdate();
+                    //         } catch (SQLException e1) {
+                    //             Alert a = new Alert(AlertType.ERROR);
+                    //             a.setContentText("update ERROR");
+                    //             // show the dialog
+                    //             a.show();
+                    //         }
                 });
                 TableColumn<Car, String> serviceDateColumn = new TableColumn<>("Service Date");
                 serviceDateColumn.setMinWidth(400);
@@ -401,10 +470,17 @@ public class finalProject extends Application {
                 serviceDateColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setServiceDate(t.getNewValue());
-                    try {
-                        saveData(1);
-                    } catch (IOException e1) {
-                    }
+                            try {
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Car_Info date_of_last_service = ? where car_VIN = ?");
+                                preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getServiceDate());
+                                preparedStatement.setString(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getVin()));
+                                preparedStatement.executeUpdate();
+                            } catch (SQLException e1) {
+                                Alert a = new Alert(AlertType.ERROR);
+                                a.setContentText("update ERROR");
+                                // show the dialog
+                                a.show();
+                            }
                 });
 
                 // end of Table Columns
@@ -463,8 +539,17 @@ public class finalProject extends Application {
                                         Integer.parseInt(year.getText()), Integer.parseInt(mileage.getText()),
                                         serviceDate.getText(), owner.getText()));
                                 try {
-                                    saveData(1);
-                                } catch (IOException e1) {
+                                    PreparedStatement preparedStatement = connection.prepareStatement( "INSERT INTO Car_Info (car_VIN, car_make, car_model, car_year, car_mileage, date_of_last_service, owner_ID)" 
+                                    +"VALUES (?, ?, ?, ?, ?, ?, ?)");
+                                    preparedStatement.setString(1, vin.getText());
+                                    preparedStatement.setString(2, make.getText() );
+                                    preparedStatement.setString(3, model.getText());
+                                    preparedStatement.setInt(4, Integer.parseInt(year.getText()));
+                                    preparedStatement.setInt(5, Integer.parseInt(mileage.getText()));
+                                    preparedStatement.setString(6, serviceDate.getText());
+                                    //preparedStatement.setInt(7, owner.getText());
+                                    preparedStatement.executeUpdate();
+                                } catch (Exception e1) {
                                 }
                                 // clearing all the old text after adding it to the list
                                 vin.clear();
@@ -518,10 +603,17 @@ public class finalProject extends Application {
                 dealerNameColumn.setOnEditCommit((CellEditEvent<Dealership, String> t) -> {
                     ((Dealership) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealerName(t.getNewValue());
-                    try {
-                        saveData(3);
-                    } catch (IOException e1) {
-                    }
+                            try {
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Dealership dealer_name = ? where dealer_ID = ?");
+                                preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealerName());
+                                preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
+                                preparedStatement.executeUpdate();
+                            } catch (SQLException e1) {
+                                Alert a = new Alert(AlertType.ERROR);
+                                a.setContentText("update ERROR");
+                                // show the dialog
+                                a.show();
+                            }
                 });
 
                 TableColumn<Dealership, String> dealerAddressColumn = new TableColumn<>("Dealer Address");
@@ -531,10 +623,17 @@ public class finalProject extends Application {
                 dealerAddressColumn.setOnEditCommit((CellEditEvent<Dealership, String> t) -> {
                     ((Dealership) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealerAddress(t.getNewValue());
-                    try {
-                        saveData(3);
-                    } catch (IOException e1) {
-                    }
+                            try {
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Dealership dealer_address = ? where dealer_ID = ?");
+                                preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealerAddress());
+                                preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
+                                preparedStatement.executeUpdate();
+                            } catch (SQLException e1) {
+                                Alert a = new Alert(AlertType.ERROR);
+                                a.setContentText("update ERROR");
+                                // show the dialog
+                                a.show();
+                            }
                 });
                 TableColumn<Dealership, String> dealerPhoneColumn = new TableColumn<>("Dealer Phone Number");
                 dealerPhoneColumn.setMinWidth(200);
@@ -543,10 +642,17 @@ public class finalProject extends Application {
                 dealerPhoneColumn.setOnEditCommit((CellEditEvent<Dealership, String> t) -> {
                     ((Dealership) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealerPhoneNumber(t.getNewValue());
-                    try {
-                        saveData(3);
-                    } catch (IOException e1) {
-                    }
+                            try {
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Dealership dealer_phoneNum = ? where dealer_ID = ?");
+                                preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealerPhoneNumber());
+                                preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
+                                preparedStatement.executeUpdate();
+                            } catch (SQLException e1) {
+                                Alert a = new Alert(AlertType.ERROR);
+                                a.setContentText("update ERROR");
+                                // show the dialog
+                                a.show();
+                            }
                 });
 
                 // Table Columns and sizes for the dealer Table
@@ -557,10 +663,17 @@ public class finalProject extends Application {
                 dealershipIDColumn.setOnEditCommit((CellEditEvent<Dealership.ServiceTech, String> t) -> {
                     ((Dealership.ServiceTech) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealershipID(Integer.parseInt(t.getNewValue()));
-                    try {
-                        saveData(6);
-                    } catch (IOException e1) {
-                    }
+                            try {
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Techs dealer_ID = ? where tech_Num = ?");
+                                preparedStatement.setInt(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID());
+                                preparedStatement.setInt(2, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDBtechNum());
+                                preparedStatement.executeUpdate();
+                            } catch (SQLException e1) {
+                                Alert a = new Alert(AlertType.ERROR);
+                                a.setContentText("update ERROR");
+                                // show the dialog
+                                a.show();
+                            }
                 });
 
                 TableColumn<Dealership.ServiceTech, String> techIDColumn = new TableColumn<>("Tech ID");
@@ -570,10 +683,17 @@ public class finalProject extends Application {
                 techIDColumn.setOnEditCommit((CellEditEvent<Dealership.ServiceTech, String> t) -> {
                     ((Dealership.ServiceTech) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setTechId(Integer.parseInt(t.getNewValue()));
-                    try {
-                        saveData(6);
-                    } catch (IOException e1) {
-                    }
+                            try {
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Techs tech_ID = ? where tech_Num = ?");
+                                preparedStatement.setInt(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getTechId());
+                                preparedStatement.setInt(2, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDBtechNum());
+                                preparedStatement.executeUpdate();
+                            } catch (SQLException e1) {
+                                Alert a = new Alert(AlertType.ERROR);
+                                a.setContentText("update ERROR");
+                                // show the dialog
+                                a.show();
+                            }
                 });
 
                 TableColumn<Dealership.ServiceTech, String> techNameColumn = new TableColumn<>("Tech Name");
@@ -583,10 +703,17 @@ public class finalProject extends Application {
                 techNameColumn.setOnEditCommit((CellEditEvent<Dealership.ServiceTech, String> t) -> {
                     ((Dealership.ServiceTech) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setTechName(t.getNewValue());
-                    try {
-                        saveData(6);
-                    } catch (IOException e1) {
-                    }
+                            try {
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Techs tech_Name = ? where tech_Num = ?");
+                                preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getTechName());
+                                preparedStatement.setInt(2, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDBtechNum());
+                                preparedStatement.executeUpdate();
+                            } catch (SQLException e1) {
+                                Alert a = new Alert(AlertType.ERROR);
+                                a.setContentText("update ERROR");
+                                // show the dialog
+                                a.show();
+                            }
                 });
 
                 // end of Table Columns
@@ -646,8 +773,13 @@ public class finalProject extends Application {
                                                 .get(Integer.parseInt(techDealershipID.getText()) - 1).new ServiceTech(
                                                         Integer.parseInt(techDealershipID.getText()),
                                                         techName.getText()));
-                                        addData(6);
-                                        // clearing the textFeild
+                                        PreparedStatement preparedStatement = connection.prepareStatement( "INSERT INTO Service_Techs (tech_ID, dealer_ID, tech_Name)" 
+                                                        +"VALUES (?, ?, ?)");
+                                        preparedStatement.setInt(1, ServiceTechs.get(ServiceTechs.size()-1).getTechId());
+                                        preparedStatement.setInt(2, Integer.parseInt(techDealershipID.getText()));
+                                        preparedStatement.setString(3, techName.getText());
+                                        preparedStatement.executeUpdate();
+                            
                                         techDealershipID.clear();
                                         techName.clear();
                                         break;
@@ -686,7 +818,13 @@ public class finalProject extends Application {
                                             dealerShipPhone.getText()));
                                     dealerName.clear();
                                     dealerAddress.clear();
-                                    addData(3);
+                                    PreparedStatement preparedStatement = connection.prepareStatement( "INSERT INTO Service_Techs (delaer_name, dealer_address, dealer_phoneNum)" 
+                                    +"VALUES (?, ?, ?)");
+                                    
+                                    preparedStatement.setString(1, dealerName.getText());
+                                    preparedStatement.setString(2, dealerAddress.getText());
+                                    preparedStatement.setString(3, dealerShipPhone.getText());
+                                    preparedStatement.executeUpdate();
                                 } catch (Exception f) {
                                     a.setContentText("There is an letter or word in the id spot");
                                     // show the dialog
@@ -816,32 +954,8 @@ public class finalProject extends Application {
 
     }
 
-    static void addData(int loaction) throws IOException {
 
-        try {
-            // update statement
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "update Staff set lastName = ?, firstName = ?, mi = ?, address = ?, city = ?, state = ?, telephone = ?  where id = ?");
 
-        } catch (SQLException e1) {
-
-        }
-
-    }
-
-    // saves the data that it has changed to the file that it needs
-    static void saveData(int loaction) throws IOException {
-
-        try {
-            // update statement
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "update Staff set lastName = ?, firstName = ?, mi = ?, address = ?, city = ?, state = ?, telephone = ?  where id = ?");
-
-        } catch (SQLException e1) {
-
-        }
-
-    }
     private static void testingPassword() throws NoSuchAlgorithmException, InvalidKeySpecException {
         String  originalPassword = "password";
         String generatedSecuredPasswordHash = hashPassword(originalPassword);
@@ -884,7 +998,7 @@ public class finalProject extends Application {
         byte[] hash = skf.generateSecret(spec).getEncoded();
         return toHex(salt) + ":" + toHex(hash);
     }
-    
+
     //gets a random salt for hashing a password
     private static byte[] getSalt() throws NoSuchAlgorithmException {
 
