@@ -16,6 +16,14 @@ import java.io.IOException;
 
 //TODO CHANGE THIS FROM * TO WHAT IS NEEDED BECAUSE IT IS BAD FOR IT TO BE *
 import java.sql.*;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -43,7 +51,7 @@ public class finalProject extends Application {
     TextField techName = new TextField();
     TextField dealerName = new TextField();
     TextField dealerShipPhone = new TextField();
-    
+
     TextField dealerAddress = new TextField();
     TextField vin = new TextField();
     TextField serviceDate = new TextField();
@@ -63,6 +71,16 @@ public class finalProject extends Application {
 
     public void start(Stage primaryStage) throws IOException, SQLException, ClassNotFoundException {
         try {
+            testingPassword();
+        } catch (Exception e3) {
+            Alert a = new Alert(AlertType.ERROR);
+            a.setContentText("PASSWORD GOES OOF");
+            System.out.println(e3);
+
+            // show the dialog
+            a.show();
+        }
+        try {
             
             // calls to have the data be added into the collection from files
             fillData();
@@ -75,8 +93,6 @@ public class finalProject extends Application {
             a.show();
         }
 
-        
-       
         // the making a table
         TableView<ServiceOrder> serviceTable = new TableView<ServiceOrder>();
         // allowing the table to be able to be edited
@@ -230,7 +246,6 @@ public class finalProject extends Application {
                                 && hoursLabor.getText().length() != 0 && ServiceDesc.getText().length() != 0
                                 && partsUsed.getText().length() != 0) {
 
-
                             serviceOrders.add(new ServiceOrder(CarVin.getText(), ServiceDesc.getText(), Date.getText(),
                                     partsUsed.getText(), Integer.parseInt(SOtechID.getText()),
                                     Integer.parseInt(SOtechDealershipID.getText()),
@@ -351,7 +366,6 @@ public class finalProject extends Application {
                 modelColumn.setMinWidth(200);
                 modelColumn.setCellValueFactory(new PropertyValueFactory<>("model"));
 
-
                 TableColumn<Car, String> yearColumn = new TableColumn<>("Year");
                 yearColumn.setMinWidth(200);
                 yearColumn.setCellValueFactory(new PropertyValueFactory<>("year"));
@@ -361,11 +375,11 @@ public class finalProject extends Application {
                 mileageColumn.setCellValueFactory(new PropertyValueFactory<>("tableMileage"));
                 mileageColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
                 mileageColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
-                 ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                    .setMileage(Integer.parseInt(t.getNewValue()));
+                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                            .setMileage(Integer.parseInt(t.getNewValue()));
                     try {
                         saveData(5);
-                        } catch (IOException e1) {
+                    } catch (IOException e1) {
                     }
                 });
 
@@ -374,8 +388,7 @@ public class finalProject extends Application {
                 ownerColumn.setCellValueFactory(new PropertyValueFactory<>("owner"));
                 ownerColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
                 ownerColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
-                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                            .setOwner(t.getNewValue());
+                    ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow())).setOwner(t.getNewValue());
                     try {
                         saveData(1);
                     } catch (IOException e1) {
@@ -427,7 +440,7 @@ public class finalProject extends Application {
 
                 carTable.setItems(Cars);
                 System.out.println(Cars.toString());
-                
+
                 scenePane.setTop(pane2);
                 scenePane.setBottom(carTable);
                 // goes back to the other scene
@@ -446,8 +459,9 @@ public class finalProject extends Application {
                                 && year.getText().length() != 0 && owner.getText().length() != 0
                                 && mileage.getText().length() != 0) {
                             if (Cars.get(0).CheckVin(vin.getText())) {
-                                Cars.add(new Car(vin.getText(), make.getText(), model.getText(),Integer.parseInt(year.getText()),
-                                Integer.parseInt(mileage.getText()), serviceDate.getText(), owner.getText()));
+                                Cars.add(new Car(vin.getText(), make.getText(), model.getText(),
+                                        Integer.parseInt(year.getText()), Integer.parseInt(mileage.getText()),
+                                        serviceDate.getText(), owner.getText()));
                                 try {
                                     saveData(1);
                                 } catch (IOException e1) {
@@ -668,7 +682,8 @@ public class finalProject extends Application {
                             if (dealerName.getText() != " " && dealerAddress.getText() != " ") {
 
                                 try {
-                                    dealerships.add(new Dealership(dealerName.getText(), dealerAddress.getText(), dealerShipPhone.getText()));
+                                    dealerships.add(new Dealership(dealerName.getText(), dealerAddress.getText(),
+                                            dealerShipPhone.getText()));
                                     dealerName.clear();
                                     dealerAddress.clear();
                                     addData(3);
@@ -726,93 +741,90 @@ public class finalProject extends Application {
 
     // takes the data from the txt file adds it to its collection
     static void fillData() throws IOException {
-    
 
-    try {
-        //Class.forName("org.sqlite.JDBC");
-        connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
-        //connection.setAutoCommit(false);
-        System.out.println("Opened database successfully");
-        Statement stmt = null;
+        try {
+            // Class.forName("org.sqlite.JDBC");
+            connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
+            // connection.setAutoCommit(false);
+            System.out.println("Opened database successfully");
+            Statement stmt = null;
 
-        stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery( "SELECT * from Car_Info;" );
-         
-          //adding Cars to the Software store
-        while ( rs.next() ) {
+            stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * from Car_Info;");
 
+            // adding Cars to the Software store
+            while (rs.next()) {
 
-            String  model = rs.getString("car_model");
-            String  make = rs.getString("car_make");
-            String VIN = rs.getString("car_VIN");
-            int year = rs.getInt("car_year");
-            int mileage = rs.getInt("car_mileage");
-            String serviceDate = null;
-            
-            String owner = connection.createStatement().executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_firstName");
-            Cars.add(new Car(VIN, make, model,year,mileage, serviceDate, owner));
-            
-        
-         }
-        
-         rs = stmt.executeQuery( "SELECT * FROM Dealership;" );
-       
-        //adding Dealer to the Software store
-         while ( rs.next() ) {
-             String dealer_Name = rs.getString("dealer_name");
-             String  dealer_address = rs.getString("dealer_address");
-             String  dealer_phoneNum = rs.getString("dealer_phoneNum");
-             dealerships.add(new Dealership(dealer_Name, dealer_address, dealer_phoneNum));
-          }
-      
-            rs = stmt.executeQuery( "SELECT * FROM Service_Techs;" );
-       
-          //adding TECHS to the Software store
-         while ( rs.next() ) {
-             int dealer_ID = rs.getInt("dealer_ID");
-             String  techName = rs.getString("tech_Name");
-             
-             ServiceTechs.add(dealerships.get(dealer_ID - 1).new ServiceTech(dealer_ID, techName));
-          }
-          
-            //adding Service_Info to the Software store
-          rs = stmt.executeQuery( "SELECT * FROM Service_Info;" );
+                String model = rs.getString("car_model");
+                String make = rs.getString("car_make");
+                String VIN = rs.getString("car_VIN");
+                int year = rs.getInt("car_year");
+                int mileage = rs.getInt("car_mileage");
+                String serviceDate = null;
 
-          while ( rs.next() ) {
-            String serviceDate = null;
-            int techID = rs.getInt("tech_ID");
-            int dealershipID = rs.getInt("dealer_ID");
-            String carVIN = rs.getString("car_VIN");
-            
-            String partsUsed = rs.getString("parts_used");
-            String serviceDesc = rs.getString("service_description");
-            double partsCost = rs.getDouble("cost_of_parts");
-            double totalCost = rs.getDouble("cost_of_service");
-            double laborHours = rs.getDouble("labor_hours");
+                String owner = connection.createStatement()
+                        .executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID"))
+                        .getString("owner_firstName");
+                Cars.add(new Car(VIN, make, model, year, mileage, serviceDate, owner));
 
-            serviceOrders.add(new ServiceOrder(carVIN, serviceDesc, serviceDate, partsUsed, techID, dealershipID, partsCost, totalCost, laborHours));
-            rs.close();
-            stmt.close();
-         }
-          
-      } catch ( Exception e ) {
-         System.out.println( "PLEASE HELP ME: " + e);
-      }
-     
+            }
+
+            rs = stmt.executeQuery("SELECT * FROM Dealership;");
+
+            // adding Dealer to the Software store
+            while (rs.next()) {
+                String dealer_Name = rs.getString("dealer_name");
+                String dealer_address = rs.getString("dealer_address");
+                String dealer_phoneNum = rs.getString("dealer_phoneNum");
+                dealerships.add(new Dealership(dealer_Name, dealer_address, dealer_phoneNum));
+            }
+
+            rs = stmt.executeQuery("SELECT * FROM Service_Techs;");
+
+            // adding TECHS to the Software store
+            while (rs.next()) {
+                int dealer_ID = rs.getInt("dealer_ID");
+                String techName = rs.getString("tech_Name");
+
+                ServiceTechs.add(dealerships.get(dealer_ID - 1).new ServiceTech(dealer_ID, techName));
+            }
+
+            // adding Service_Info to the Software store
+            rs = stmt.executeQuery("SELECT * FROM Service_Info;");
+
+            while (rs.next()) {
+                String serviceDate = null;
+                int techID = rs.getInt("tech_ID");
+                int dealershipID = rs.getInt("dealer_ID");
+                String carVIN = rs.getString("car_VIN");
+
+                String partsUsed = rs.getString("parts_used");
+                String serviceDesc = rs.getString("service_description");
+                double partsCost = rs.getDouble("cost_of_parts");
+                double totalCost = rs.getDouble("cost_of_service");
+                double laborHours = rs.getDouble("labor_hours");
+
+                serviceOrders.add(new ServiceOrder(carVIN, serviceDesc, serviceDate, partsUsed, techID, dealershipID,
+                        partsCost, totalCost, laborHours));
+                rs.close();
+                stmt.close();
+            }
+
+        } catch (Exception e) {
+            System.out.println("PLEASE HELP ME: " + e);
+        }
+
     }
-    
+
     static void addData(int loaction) throws IOException {
 
         try {
             // update statement
             PreparedStatement preparedStatement = connection.prepareStatement(
                     "update Staff set lastName = ?, firstName = ?, mi = ?, address = ?, city = ?, state = ?, telephone = ?  where id = ?");
-            
-          
 
         } catch (SQLException e1) {
-            
-        
+
         }
 
     }
@@ -824,21 +836,86 @@ public class finalProject extends Application {
             // update statement
             PreparedStatement preparedStatement = connection.prepareStatement(
                     "update Staff set lastName = ?, firstName = ?, mi = ?, address = ?, city = ?, state = ?, telephone = ?  where id = ?");
-            
-          
 
         } catch (SQLException e1) {
-            
-        
+
         }
 
     }
-    
+    private static void testingPassword() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        String  originalPassword = "password";
+        String generatedSecuredPasswordHash = hashPassword(originalPassword);
+        System.out.println(generatedSecuredPasswordHash);
+        String[] parts = generatedSecuredPasswordHash.split(":");
+        boolean matched = checkingPassword(parts[1], parts[0], "password");
+        System.out.println(matched);
+         
+        matched = checkingPassword(parts[1], parts[0], "password1");
+        System.out.println(matched);
+
+    }
+
+
+    private static Boolean checkingPassword(String passwordHash, String Salt, String tryingPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        //stores the old salt an hash
+        byte[] salt = fromHex(Salt);
+        byte[] hash = fromHex(passwordHash);
+        //makes a new has for the trying password with the old salt
+        PBEKeySpec spec = new PBEKeySpec(tryingPassword.toCharArray(), salt, 1000, hash.length * 8);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        byte[] testHash = skf.generateSecret(spec).getEncoded();
+         
+        int diff = hash.length ^ testHash.length;
+        for(int i = 0; i < hash.length && i < testHash.length; i++)
+        {
+            diff |= hash[i] ^ testHash[i];
+        }
+        return diff == 0;
+    }
+
+    private static String hashPassword(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+
+        char[] passwordChar = password.toCharArray();
+        byte[] salt = getSalt();
+        PBEKeySpec spec = new PBEKeySpec(passwordChar, salt, 1000, 64 * 8);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        byte[] hash = skf.generateSecret(spec).getEncoded();
+        return toHex(salt) + ":" + toHex(hash);
+    }
+
+    private static byte[] getSalt() throws NoSuchAlgorithmException {
+
+        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+        byte[] salt = new byte[16];
+        sr.nextBytes(salt);
+        return salt;
+    }
+
+    // converts from a bytes to a hex
+    private static String toHex(byte[] array) throws NoSuchAlgorithmException {
+
+        BigInteger bi = new BigInteger(1, array);
+        String hex = bi.toString(16);
+        int paddingLength = (array.length * 2) - hex.length();
+        if (paddingLength > 0) {
+            return String.format("%0" + paddingLength + "d", 0) + hex;
+        } else {
+            return hex;
+        }
+    }
+
+    // converts from a hex to a byte
+    private static byte[] fromHex(String hex) throws NoSuchAlgorithmException {
+        byte[] bytes = new byte[hex.length() / 2];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
+        }
+        return bytes;
+    }
 
     public static void main(String[] args) {
         // starting the GUI
         Application.launch(args);
-        
+
     }
 }
-
