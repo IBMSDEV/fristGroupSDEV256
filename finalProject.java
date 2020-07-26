@@ -855,7 +855,7 @@ public class finalProject extends Application {
 
     }
 
-
+//checks if the password entered eqauls the old password
     private static Boolean checkingPassword(String passwordHash, String Salt, String tryingPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
         //stores the old salt an hash
         byte[] salt = fromHex(Salt);
@@ -864,15 +864,17 @@ public class finalProject extends Application {
         PBEKeySpec spec = new PBEKeySpec(tryingPassword.toCharArray(), salt, 1000, hash.length * 8);
         SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
         byte[] testHash = skf.generateSecret(spec).getEncoded();
-         
-        int diff = hash.length ^ testHash.length;
+        //checking for differences
+        int differece = hash.length ^ testHash.length;
         for(int i = 0; i < hash.length && i < testHash.length; i++)
         {
-            diff |= hash[i] ^ testHash[i];
+            differece |= hash[i] ^ testHash[i];
         }
-        return diff == 0;
+        //returns if they are different
+        return differece == 0;
     }
 
+    //hashes the password and returns the hash and the salt that was used to hash it with
     private static String hashPassword(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
 
         char[] passwordChar = password.toCharArray();
@@ -882,7 +884,8 @@ public class finalProject extends Application {
         byte[] hash = skf.generateSecret(spec).getEncoded();
         return toHex(salt) + ":" + toHex(hash);
     }
-
+    
+    //gets a random salt for hashing a password
     private static byte[] getSalt() throws NoSuchAlgorithmException {
 
         SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
