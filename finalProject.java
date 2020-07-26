@@ -40,6 +40,9 @@ import javafx.scene.control.cell.TextFieldTableCell;
 
 public class finalProject extends Application {
     static Connection connection = null;
+    int userType = 0;
+    TextField username = new TextField();
+    TextField password = new TextField();
     // text fields for editing and adding data for the other scenes
     TextField partsUsed = new TextField();
     TextField partCost = new TextField();
@@ -69,16 +72,7 @@ public class finalProject extends Application {
     String selectedDealerNames = "";
 
     public void start(Stage primaryStage) throws IOException, SQLException, ClassNotFoundException {
-        try {
-            testingPassword();
-        } catch (Exception e3) {
-            Alert a = new Alert(AlertType.ERROR);
-            a.setContentText("PASSWORD GOES OOF");
-            System.out.println(e3);
-
-            // show the dialog
-            a.show();
-        }
+        
         try {
 
             // calls to have the data be added into the collection from files
@@ -114,13 +108,14 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setServiceDesc(t.getNewValue());
             try {
-                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info service_description = ? where service_num = ?");
+                PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Service_Info SET service_description = ? where service_num = ?");
                 preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getServiceDesc());
                 preparedStatement.setInt(2, (t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
                 preparedStatement.executeUpdate();
             } catch (SQLException e1) {
                 Alert a = new Alert(AlertType.ERROR);
                 a.setContentText("update ERROR");
+                System.out.println(e1);
                 // show the dialog
                 a.show();
             }
@@ -135,7 +130,7 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setPartsUsed(t.getNewValue());
                     try {
-                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info parts_used = ? where service_num = ?");
+                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info SET parts_used = ? where service_num = ?");
                         preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getPartsUsed());
                         preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
                         preparedStatement.executeUpdate();
@@ -164,7 +159,7 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setPartsCost(Double.parseDouble(t.getNewValue()));
                     try {
-                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info cost_of_parts = ? where service_num = ?");
+                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info SET cost_of_parts = ? where service_num = ?");
                         preparedStatement.setDouble(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getPartsCost());
                         preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
                         preparedStatement.executeUpdate();
@@ -184,7 +179,7 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setLaborHours(Double.parseDouble(t.getNewValue()));
                     try {
-                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info labor_hours = ? where service_num = ?");
+                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info SET labor_hours = ? where service_num = ?");
                         preparedStatement.setDouble(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getLaborHours());
                         preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
                         preparedStatement.executeUpdate();
@@ -205,7 +200,7 @@ public class finalProject extends Application {
             ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                     .setTotalCost(Double.parseDouble(t.getNewValue()));
                     try {
-                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info cost_of_service = ? where service_num = ?");
+                        PreparedStatement preparedStatement = connection.prepareStatement("update Service_Info SET cost_of_service = ? where service_num = ?");
                         preparedStatement.setDouble(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getTotalCost());
                         preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
                         preparedStatement.executeUpdate();
@@ -433,7 +428,7 @@ public class finalProject extends Application {
                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setMileage(Integer.parseInt(t.getNewValue()));
                             try {
-                                PreparedStatement preparedStatement = connection.prepareStatement("update Car_Info car_mileage = ? where car_VIN = ?");
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Car_Info SET car_mileage = ? where car_VIN = ?");
                                 preparedStatement.setInt(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getMileage());
                                 preparedStatement.setString(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getVin()));
                                 preparedStatement.executeUpdate();
@@ -471,7 +466,7 @@ public class finalProject extends Application {
                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setServiceDate(t.getNewValue());
                             try {
-                                PreparedStatement preparedStatement = connection.prepareStatement("update Car_Info date_of_last_service = ? where car_VIN = ?");
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Car_Info SET date_of_last_service = ? where car_VIN = ?");
                                 preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getServiceDate());
                                 preparedStatement.setString(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getVin()));
                                 preparedStatement.executeUpdate();
@@ -604,7 +599,7 @@ public class finalProject extends Application {
                     ((Dealership) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealerName(t.getNewValue());
                             try {
-                                PreparedStatement preparedStatement = connection.prepareStatement("update Dealership dealer_name = ? where dealer_ID = ?");
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Dealership SET dealer_name = ? where dealer_ID = ?");
                                 preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealerName());
                                 preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
                                 preparedStatement.executeUpdate();
@@ -624,7 +619,7 @@ public class finalProject extends Application {
                     ((Dealership) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealerAddress(t.getNewValue());
                             try {
-                                PreparedStatement preparedStatement = connection.prepareStatement("update Dealership dealer_address = ? where dealer_ID = ?");
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Dealership SET dealer_address = ? where dealer_ID = ?");
                                 preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealerAddress());
                                 preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
                                 preparedStatement.executeUpdate();
@@ -643,7 +638,7 @@ public class finalProject extends Application {
                     ((Dealership) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealerPhoneNumber(t.getNewValue());
                             try {
-                                PreparedStatement preparedStatement = connection.prepareStatement("update Dealership dealer_phoneNum = ? where dealer_ID = ?");
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Dealership SET dealer_phoneNum = ? where dealer_ID = ?");
                                 preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealerPhoneNumber());
                                 preparedStatement.setInt(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID()));
                                 preparedStatement.executeUpdate();
@@ -664,7 +659,7 @@ public class finalProject extends Application {
                     ((Dealership.ServiceTech) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setDealershipID(Integer.parseInt(t.getNewValue()));
                             try {
-                                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Techs dealer_ID = ? where tech_Num = ?");
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Techs SET dealer_ID = ? where tech_Num = ?");
                                 preparedStatement.setInt(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDealershipID());
                                 preparedStatement.setInt(2, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDBtechNum());
                                 preparedStatement.executeUpdate();
@@ -684,7 +679,7 @@ public class finalProject extends Application {
                     ((Dealership.ServiceTech) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setTechId(Integer.parseInt(t.getNewValue()));
                             try {
-                                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Techs tech_ID = ? where tech_Num = ?");
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Techs SET tech_ID = ? where tech_Num = ?");
                                 preparedStatement.setInt(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getTechId());
                                 preparedStatement.setInt(2, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDBtechNum());
                                 preparedStatement.executeUpdate();
@@ -704,7 +699,7 @@ public class finalProject extends Application {
                     ((Dealership.ServiceTech) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                             .setTechName(t.getNewValue());
                             try {
-                                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Techs tech_Name = ? where tech_Num = ?");
+                                PreparedStatement preparedStatement = connection.prepareStatement("update Service_Techs SET tech_Name = ? where tech_Num = ?");
                                 preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getTechName());
                                 preparedStatement.setInt(2, t.getTableView().getItems().get(t.getTablePosition().getRow()).getDBtechNum());
                                 preparedStatement.executeUpdate();
@@ -787,6 +782,7 @@ public class finalProject extends Application {
                                     } catch (Exception f) {
 
                                         a.setContentText("There is an letter or word in the id spot");
+                                        System.out.println(f);
                                         // show the dialog
                                         a.show();
                                     }
@@ -801,6 +797,7 @@ public class finalProject extends Application {
                         } catch (Exception f) {
 
                             a.setContentText("There is an letter or word in the id spot");
+                            System.out.println(f);
                             // show the dialog
                             a.show();
                         }
@@ -816,17 +813,20 @@ public class finalProject extends Application {
                                 try {
                                     dealerships.add(new Dealership(dealerName.getText(), dealerAddress.getText(),
                                             dealerShipPhone.getText()));
-                                    dealerName.clear();
-                                    dealerAddress.clear();
-                                    PreparedStatement preparedStatement = connection.prepareStatement( "INSERT INTO Service_Techs (delaer_name, dealer_address, dealer_phoneNum)" 
+                                    
+                                    PreparedStatement preparedStatement = connection.prepareStatement( "INSERT INTO DealerShip (dealer_name, dealer_address, dealer_phoneNum)" 
                                     +"VALUES (?, ?, ?)");
                                     
                                     preparedStatement.setString(1, dealerName.getText());
                                     preparedStatement.setString(2, dealerAddress.getText());
                                     preparedStatement.setString(3, dealerShipPhone.getText());
                                     preparedStatement.executeUpdate();
+                                    dealerName.clear();
+                                    dealerAddress.clear();
+                                    dealerShipPhone.clear();
                                 } catch (Exception f) {
                                     a.setContentText("There is an letter or word in the id spot");
+                                    System.out.println(f);
                                     // show the dialog
                                     a.show();
                                 }
@@ -850,6 +850,9 @@ public class finalProject extends Application {
                 backButton.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent e) {
+                        dealerBox.getItems().clear();
+                        for (int i = 0; i < dealerships.size(); i++)
+                            dealerBox.getItems().add(dealerships.get(i).dealerName);
                         primaryStage.setScene(mainScene);
                         primaryStage.setTitle("Service Order Shower");
                     }
