@@ -45,7 +45,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 public class finalProject extends Application {
     static Connection connection = null;
     static int userType = 0;
-    Boolean passwordRest; 
+    Boolean passwordRest;
     TextField username = new TextField();
     PasswordField password = new PasswordField();
     // text fields for editing and adding data for the other scenes
@@ -85,7 +85,7 @@ public class finalProject extends Application {
         loginPane.setHgap(5);
         loginPane.setVgap(5);
         loginPane.add(new Label("Username: "), 0, 0);
-        loginPane.add(username, 1,0);
+        loginPane.add(username, 1, 0);
         loginPane.add(new Label("Password: "), 0, 1);
         loginPane.add(password, 1, 1);
         loginPane.add(loginButton, 2, 2);
@@ -336,7 +336,7 @@ public class finalProject extends Application {
                                             preparedStatement.setDouble(7, Double.parseDouble(partCost.getText()));
                                             preparedStatement.setDouble(8, Double.parseDouble(totalCost.getText()));
                                             preparedStatement.setDouble(9, Double.parseDouble(hoursLabor.getText()));
-
+                                            preparedStatement.executeUpdate();
                                         } else
                                             serviceOrders.add(new ServiceOrder(CarVin.getText(),
                                                     Integer.parseInt(SOtechID.getText()),
@@ -348,7 +348,7 @@ public class finalProject extends Application {
                                         preparedStatement.setInt(2, Integer.parseInt(SOtechDealershipID.getText()));
                                         preparedStatement.setInt(3, Integer.parseInt(SOtechID.getText()));
                                         preparedStatement.setString(4, Date.getText());
-
+                                        preparedStatement.executeUpdate();
                                     } catch (java.lang.NumberFormatException e2) {
                                         a.setContentText("There is an letter or word in the id spot");
                                         // show the dialog
@@ -403,8 +403,9 @@ public class finalProject extends Application {
                         textFeildsPane.add(addServiceOrder, 0, 3);
                         textFeildsPane.add(addDealerTech, 1, 0);
                         textFeildsPane.add(addCar, 2, 0);
-                        //only admins can add new users and change users info
-                        if(userType == 0) textFeildsPane.add(addUser, 0, 0);
+                        // only admins can add new users and change users info
+                        if (userType == 0)
+                            textFeildsPane.add(addUser, 0, 0);
                         // setting location
                         pane.setTop(textFeildsPane);
 
@@ -445,59 +446,88 @@ public class finalProject extends Application {
                         addUser.setOnAction(new EventHandler<ActionEvent>() {
                             @Override
                             public void handle(ActionEvent e) {
-                            GridPane userTextPane = new GridPane();
-                            BorderPane userMainPane = new BorderPane();
-                            userTextPane.setPadding(new Insets(15, 15, 15, 15));
-                            userTextPane.setHgap(5);
-                            userTextPane.setVgap(5);   
-                            ObservableList<User> users = FXCollections.observableArrayList();
-                            
-                            try {
-                                Statement stmt = null;
+                                GridPane userTextPane = new GridPane();
+                                BorderPane userMainPane = new BorderPane();
+                                userTextPane.setPadding(new Insets(15, 15, 15, 15));
+                                userTextPane.setHgap(5);
+                                userTextPane.setVgap(5);
+                                ObservableList<User> users = FXCollections.observableArrayList();
 
-                                stmt = connection.createStatement();
-                                ResultSet rs = stmt.executeQuery("SELECT * from Users;");
+                                try {
+                                    Statement stmt = null;
 
-                                // adding Cars to the Software store
-                                while (rs.next()) {
+                                    stmt = connection.createStatement();
+                                    ResultSet rs = stmt.executeQuery("SELECT * from Users;");
 
-                                    String userName=rs.getString("user_name"); 
-                                    int userType= rs.getInt("user_Type"); 
-                                    int userID= rs.getInt("user_ID"); 
-                                    int passwordRest= rs.getInt("pw_reset"); 
-                                    users.add(new User(userName, userType, userID, passwordRest));
+                                    // adding Cars to the Software store
+                                    while (rs.next()) {
 
+                                        String userName = rs.getString("user_name");
+                                        int userType = rs.getInt("user_Type");
+                                        int userID = rs.getInt("user_ID");
+                                        int passwordRest = rs.getInt("pw_reset");
+                                        users.add(new User(userName, userType, userID, passwordRest));
 
-                            }
-                            } catch (Exception e2) {
-                                System.out.println(e2);
-                            }
-                            //TODO add 
-                          
-                            final ComboBox<String> userTypeBox = new ComboBox<String>();
+                                    }
+                                } catch (Exception e2) {
+                                    System.out.println(e2);
+                                }
+                                // TODO add
 
-                            userTypeBox.getItems().add("Owner");
-                            userTypeBox.getItems().add("Manger");
-                            userTypeBox.getItems().add("Sercive Advisor");
-                            userTypeBox.getItems().add("Sercive Tech");
-                           
-                            TableView<User> userTable = new TableView<User>();
-                            Button addNewUserButton = new Button("Add New User");
-                            TextField userNameField = new TextField();
-                            Button backButton = new Button("Back");
-                            userTextPane.add((new Label("User Name: ")),0,0);
-                            userTextPane.add(userNameField,0,1);
+                                final ComboBox<String> userTypeBox = new ComboBox<String>();
 
-                            userTextPane.add((new Label("User Type: ")),1,0);
-                            userTextPane.add(userTypeBox,1,1);
+                                userTypeBox.getItems().add("Owner");
+                                userTypeBox.getItems().add("Manger");
+                                userTypeBox.getItems().add("Sercive Advisor");
+                                userTypeBox.getItems().add("Sercive Tech");
 
-                            userTextPane.add(addNewUserButton,2,2);
-                            userTextPane.add(backButton,0,2);
-                            backButton.setOnAction(new EventHandler<ActionEvent>() {
-                                @Override
-                                public void handle(ActionEvent e) {
-                                    primaryStage.setScene(mainScene);
-                                    primaryStage.setTitle("Service Order Shower");
+                                TableView<User> userTable = new TableView<User>();
+                                Button addNewUserButton = new Button("Add New User");
+                                TextField userNameField = new TextField();
+                                Button backButton = new Button("Back");
+                                userTextPane.add((new Label("User Name: ")), 0, 0);
+                                userTextPane.add(userNameField, 0, 1);
+
+                                userTextPane.add((new Label("User Type: ")), 1, 0);
+                                userTextPane.add(userTypeBox, 1, 1);
+
+                                userTextPane.add(addNewUserButton, 2, 2);
+                                userTextPane.add(backButton, 0, 2);
+                                backButton.setOnAction(new EventHandler<ActionEvent>() {
+                                    @Override
+                                    public void handle(ActionEvent e) {
+                                        primaryStage.setScene(mainScene);
+                                        primaryStage.setTitle("Service Order Shower");
+                                    }
+                                });
+
+                                addNewUserButton.setOnAction(new EventHandler<ActionEvent>() {
+                                    @Override
+                                    public void handle(ActionEvent e) {
+                                        if (!userTypeBox.getValue().equals("") && userNameField.getText() != "") {
+                                            int index;
+                                            if (userTypeBox.getValue().equals("Owner")) index = 1;
+                                            else if (userTypeBox.getValue().equals("Manger")) index = 2;
+                                            else if (userTypeBox.getValue().equals("Sercive Advisor")) index = 3;
+                                            else  index = 4;
+                                            users.add(new User(userNameField.getText(), index));
+                                            
+                                            try {
+                                                PreparedStatement preparedStatement = connection.prepareStatement(
+                                                    "INSERT INTO Users (user_Type, user_Name, pw_reset, salt, hash)"
+                                                            + "VALUES (?, ?, ?, ?, ?)");
+                                                preparedStatement.setInt(1, users.get(users.size()-1).getUserID());
+                                                preparedStatement.setString(2, users.get(users.size()-1).getUserName());
+                                                preparedStatement.setInt(3, 1);
+                                                String[] parts = hashPassword("password").split(":");
+                                                preparedStatement.setString(4, parts[0]);
+                                                preparedStatement.setString(5, parts[1]);
+                                                preparedStatement.executeUpdate();
+                                            } catch (Exception e1) {
+                                                // TODO Auto-generated catch block
+                                                e1.printStackTrace();
+                                            }
+                                    }
                                 }
                             });
                             TableColumn<User, String> userNameColumn = new TableColumn<>("User Name");

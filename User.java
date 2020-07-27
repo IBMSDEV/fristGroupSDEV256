@@ -3,14 +3,16 @@ public class User{
     public int userType;
     public int userID;
     public Boolean passwordRest; 
- 
-     User(String userName, int userType, int userID){
+ public static int softwareUserID = 0;
+     User(String userName, int userType){
+        softwareUserID++;
          this.userName = userName;
          this.userType = userType;
-         this.userID = userID;
+         this.userID = softwareUserID;
          this.passwordRest = true;
      }
      User(String userName, int userType, int userID, int passwordRest){
+        softwareUserID++;
          this.userName = userName;
          this.userType = userType;
          this.userID = userID;
