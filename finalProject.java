@@ -2,7 +2,6 @@
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import javafx.scene.layout.BorderPane;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -33,7 +32,6 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.FXCollections;
@@ -45,7 +43,8 @@ import javafx.scene.control.cell.TextFieldTableCell;
 public class finalProject extends Application {
     static Connection connection = null;
     static int userType = 0;
-    Boolean passwordRest;
+    static int userID;
+    static Boolean passwordRest = false;
     TextField username = new TextField();
     PasswordField password = new PasswordField();
     // text fields for editing and adding data for the other scenes
@@ -74,6 +73,7 @@ public class finalProject extends Application {
     static ObservableList<Dealership.ServiceTech> ServiceTechs = FXCollections.observableArrayList();
     static ObservableList<Car> Cars = FXCollections.observableArrayList();
     static ObservableList<ServiceOrder> serviceOrders = FXCollections.observableArrayList();
+    static ObservableList<Owner> owners = FXCollections.observableArrayList();
     String selectedDealerNames = "";
 
     public void start(Stage primaryStage) throws IOException, SQLException, ClassNotFoundException {
@@ -90,6 +90,7 @@ public class finalProject extends Application {
         loginPane.add(password, 1, 1);
         loginPane.add(loginButton, 2, 2);
         panes.setCenter(loginPane);
+        loginButton.setDefaultButton(true);
         Scene loginScene = new Scene(panes, 300, 200);
         loginButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent ea) {
@@ -99,7 +100,6 @@ public class finalProject extends Application {
                         try {
                             // calls to have the data be added into the collection from files
                             fillData();
-                            System.out.print("SUP");
                         } catch (Exception e) {
                             Alert a = new Alert(AlertType.ERROR);
                             a.setContentText("Cannot Connect To DataBase");
@@ -125,51 +125,53 @@ public class finalProject extends Application {
                         ServiceDescColumn.setMinWidth(200);
                         ServiceDescColumn.setCellValueFactory(new PropertyValueFactory<>("serviceDesc"));
                         // For editing the data already in the table
-                        ServiceDescColumn.setCellFactory(TextFieldTableCell.<ServiceOrder>forTableColumn());
-                        ServiceDescColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
-                            ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                                    .setServiceDesc(t.getNewValue());
-                            try {
-                                PreparedStatement preparedStatement = connection.prepareStatement(
-                                        "UPDATE Service_Info SET service_description = ? where service_num = ?");
-                                preparedStatement.setString(1, t.getTableView().getItems()
-                                        .get(t.getTablePosition().getRow()).getServiceDesc());
-                                preparedStatement.setInt(2, (t.getTableView().getItems()
-                                        .get(t.getTablePosition().getRow()).getDealershipID()));
-                                preparedStatement.executeUpdate();
-                            } catch (SQLException e1) {
-                                Alert a = new Alert(AlertType.ERROR);
-                                a.setContentText("update ERROR");
-                                System.out.println(e1);
-                                // show the dialog
-                                a.show();
-                            }
-                        });
-
+                        if (userType <= 3) {
+                            ServiceDescColumn.setCellFactory(TextFieldTableCell.<ServiceOrder>forTableColumn());
+                            ServiceDescColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
+                                ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                        .setServiceDesc(t.getNewValue());
+                                try {
+                                    PreparedStatement preparedStatement = connection.prepareStatement(
+                                            "UPDATE Service_Info SET service_description = ? where service_num = ?");
+                                    preparedStatement.setString(1, t.getTableView().getItems()
+                                            .get(t.getTablePosition().getRow()).getServiceDesc());
+                                    preparedStatement.setInt(2, (t.getTableView().getItems()
+                                            .get(t.getTablePosition().getRow()).getDealershipID()));
+                                    preparedStatement.executeUpdate();
+                                } catch (SQLException e1) {
+                                    Alert a = new Alert(AlertType.ERROR);
+                                    a.setContentText("update ERROR");
+                                    System.out.println(e1);
+                                    // show the dialog
+                                    a.show();
+                                }
+                            });
+                        }
                         TableColumn<ServiceOrder, String> partsUsedColumn = new TableColumn<>("Parts Used");
                         partsUsedColumn.setMinWidth(200);
                         partsUsedColumn.setCellValueFactory(new PropertyValueFactory<>("partsUsed"));
                         // For editing the data already in the table
-                        partsUsedColumn.setCellFactory(TextFieldTableCell.<ServiceOrder>forTableColumn());
-                        partsUsedColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
-                            ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                                    .setPartsUsed(t.getNewValue());
-                            try {
-                                PreparedStatement preparedStatement = connection.prepareStatement(
-                                        "update Service_Info SET parts_used = ? where service_num = ?");
-                                preparedStatement.setString(1,
-                                        t.getTableView().getItems().get(t.getTablePosition().getRow()).getPartsUsed());
-                                preparedStatement.setInt(2, (t.getTableView().getItems()
-                                        .get(t.getTablePosition().getRow()).getDealershipID()));
-                                preparedStatement.executeUpdate();
-                            } catch (SQLException e1) {
-                                Alert a = new Alert(AlertType.ERROR);
-                                a.setContentText("update ERROR");
-                                // show the dialog
-                                a.show();
-                            }
-                        });
-
+                        if (userType <= 3) {
+                            partsUsedColumn.setCellFactory(TextFieldTableCell.<ServiceOrder>forTableColumn());
+                            partsUsedColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
+                                ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                        .setPartsUsed(t.getNewValue());
+                                try {
+                                    PreparedStatement preparedStatement = connection.prepareStatement(
+                                            "update Service_Info SET parts_used = ? where service_num = ?");
+                                    preparedStatement.setString(1, t.getTableView().getItems()
+                                            .get(t.getTablePosition().getRow()).getPartsUsed());
+                                    preparedStatement.setInt(2, (t.getTableView().getItems()
+                                            .get(t.getTablePosition().getRow()).getDealershipID()));
+                                    preparedStatement.executeUpdate();
+                                } catch (SQLException e1) {
+                                    Alert a = new Alert(AlertType.ERROR);
+                                    a.setContentText("update ERROR");
+                                    // show the dialog
+                                    a.show();
+                                }
+                            });
+                        }
                         TableColumn<ServiceOrder, String> TechIDColumn = new TableColumn<>("Tech ID");
                         TechIDColumn.setMinWidth(100);
                         TechIDColumn.setCellValueFactory(new PropertyValueFactory<>("techID"));
@@ -182,72 +184,79 @@ public class finalProject extends Application {
                         costPartsColumn.setMinWidth(100);
                         costPartsColumn.setCellValueFactory(new PropertyValueFactory<>("tablePartsCost"));
                         // For editing the data already in the table
-                        costPartsColumn.setCellFactory(TextFieldTableCell.<ServiceOrder>forTableColumn());
-                        costPartsColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
-                            ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                                    .setPartsCost(Double.parseDouble(t.getNewValue()));
-                            try {
-                                PreparedStatement preparedStatement = connection.prepareStatement(
-                                        "update Service_Info SET cost_of_parts = ? where service_num = ?");
-                                preparedStatement.setDouble(1,
-                                        t.getTableView().getItems().get(t.getTablePosition().getRow()).getPartsCost());
-                                preparedStatement.setInt(2, (t.getTableView().getItems()
-                                        .get(t.getTablePosition().getRow()).getDealershipID()));
-                                preparedStatement.executeUpdate();
-                            } catch (SQLException e1) {
-                                Alert a = new Alert(AlertType.ERROR);
-                                a.setContentText("update ERROR");
-                                // show the dialog
-                                a.show();
-                            }
-                        });
+                        if (userType <= 3) {
+                            costPartsColumn.setCellFactory(TextFieldTableCell.<ServiceOrder>forTableColumn());
+                            costPartsColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
+                                ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                        .setPartsCost(Double.parseDouble(t.getNewValue()));
+                                try {
+                                    PreparedStatement preparedStatement = connection.prepareStatement(
+                                            "update Service_Info SET cost_of_parts = ? where service_num = ?");
+                                    preparedStatement.setDouble(1, t.getTableView().getItems()
+                                            .get(t.getTablePosition().getRow()).getPartsCost());
+                                    preparedStatement.setInt(2, (t.getTableView().getItems()
+                                            .get(t.getTablePosition().getRow()).getDealershipID()));
+                                    preparedStatement.executeUpdate();
+                                } catch (SQLException e1) {
+                                    Alert a = new Alert(AlertType.ERROR);
+                                    a.setContentText("update ERROR");
+                                    // show the dialog
+                                    a.show();
+                                }
+                            });
+                        }
                         TableColumn<ServiceOrder, String> LaborHoursColumn = new TableColumn<>("Hours of Labor");
                         LaborHoursColumn.setMinWidth(100);
                         LaborHoursColumn.setCellValueFactory(new PropertyValueFactory<>("tableLaborHours"));
                         // For editing the data already in the table
-                        LaborHoursColumn.setCellFactory(TextFieldTableCell.<ServiceOrder>forTableColumn());
-                        LaborHoursColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
-                            ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                                    .setLaborHours(Double.parseDouble(t.getNewValue()));
-                            try {
-                                PreparedStatement preparedStatement = connection.prepareStatement(
-                                        "update Service_Info SET labor_hours = ? where service_num = ?");
-                                preparedStatement.setDouble(1,
-                                        t.getTableView().getItems().get(t.getTablePosition().getRow()).getLaborHours());
-                                preparedStatement.setInt(2, (t.getTableView().getItems()
-                                        .get(t.getTablePosition().getRow()).getDealershipID()));
-                                preparedStatement.executeUpdate();
-                            } catch (SQLException e1) {
-                                Alert a = new Alert(AlertType.ERROR);
-                                a.setContentText("update ERROR");
-                                // show the dialog
-                                a.show();
-                            }
-                        });
+                        if (userType <= 3) {
+                            LaborHoursColumn.setCellFactory(TextFieldTableCell.<ServiceOrder>forTableColumn());
+                            LaborHoursColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
+                                ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                        .setLaborHours(Double.parseDouble(t.getNewValue()));
+                                try {
+                                    PreparedStatement preparedStatement = connection.prepareStatement(
+                                            "update Service_Info SET labor_hours = ? where service_num = ?");
+                                    preparedStatement.setDouble(1, t.getTableView().getItems()
+                                            .get(t.getTablePosition().getRow()).getLaborHours());
+                                    preparedStatement.setInt(2, (t.getTableView().getItems()
+                                            .get(t.getTablePosition().getRow()).getDealershipID()));
+                                    preparedStatement.executeUpdate();
+                                } catch (SQLException e1) {
+                                    Alert a = new Alert(AlertType.ERROR);
+                                    a.setContentText("update ERROR");
+                                    // show the dialog
+                                    a.show();
+                                }
+                            });
+                        }
                         TableColumn<ServiceOrder, String> totalCostColumn = new TableColumn<>("Total Cost");
                         totalCostColumn.setMinWidth(100);
                         totalCostColumn.setCellValueFactory(new PropertyValueFactory<>("tableTotalCost"));
 
                         // For editing the data already in the table
-                        totalCostColumn.setCellFactory(TextFieldTableCell.<ServiceOrder>forTableColumn());
-                        totalCostColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
-                            ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
-                                    .setTotalCost(Double.parseDouble(t.getNewValue()));
-                            try {
-                                PreparedStatement preparedStatement = connection.prepareStatement(
-                                        "update Service_Info SET cost_of_service = ? where service_num = ?");
-                                preparedStatement.setDouble(1,
-                                        t.getTableView().getItems().get(t.getTablePosition().getRow()).getTotalCost());
-                                preparedStatement.setInt(2, (t.getTableView().getItems()
-                                        .get(t.getTablePosition().getRow()).getDealershipID()));
-                                preparedStatement.executeUpdate();
-                            } catch (SQLException e1) {
-                                Alert a = new Alert(AlertType.ERROR);
-                                a.setContentText("update ERROR");
-                                // show the dialog
-                                a.show();
-                            }
-                        });
+                        if (userType <= 3) {
+                            totalCostColumn.setCellFactory(TextFieldTableCell.<ServiceOrder>forTableColumn());
+                            totalCostColumn.setOnEditCommit((CellEditEvent<ServiceOrder, String> t) -> {
+                                ((ServiceOrder) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                        .setTotalCost(Double.parseDouble(t.getNewValue()));
+                                try {
+                                    PreparedStatement preparedStatement = connection.prepareStatement(
+                                            "update Service_Info SET cost_of_service = ? where service_num = ?");
+                                    preparedStatement.setDouble(1, t.getTableView().getItems()
+                                            .get(t.getTablePosition().getRow()).getTotalCost());
+                                    preparedStatement.setInt(2, (t.getTableView().getItems()
+                                            .get(t.getTablePosition().getRow()).getDealershipID()));
+                                    preparedStatement.executeUpdate();
+                                } catch (SQLException e1) {
+                                    Alert a = new Alert(AlertType.ERROR);
+                                    a.setContentText("update ERROR");
+                                    // show the dialog
+                                    a.show();
+                                }
+
+                            });
+                        }
                         // end of Table Columns
 
                         // adding table columns
@@ -270,47 +279,58 @@ public class finalProject extends Application {
                         // the dealer combobox for selecting the dealer to look at the service orders of
                         textFeildsPane.add(new Label("Dealers' service looking for service records: "), 0, 1);
                         final ComboBox<String> dealerBox = new ComboBox<String>();
-
-                        for (int i = 0; i < dealerships.size(); i++)
+                        final ComboBox<String> dealerBox2 = new ComboBox<String>();
+                        for (int i = 0; i < dealerships.size(); i++) {
                             dealerBox.getItems().add(dealerships.get(i).dealerName);
+                            dealerBox2.getItems().add(dealerships.get(i).dealerName);
+                        }
                         textFeildsPane.add(dealerBox, 1, 1);
                         // buttons to add or edit the information
                         Button addServiceOrder = new Button("Add Service Order");
                         Button addDealerTech = new Button("Add new or edit Dealer and Tech");
                         Button addCar = new Button("Add new or edit Car");
                         Button addUser = new Button("Add user");
+                        Button addOwner = new Button("Add Owner");
+                        Button changePassword = new Button("Change Password");
                         Alert a = new Alert(AlertType.ERROR);
                         // adding textFeilds to add the Service orders
                         TextField CarVin = new TextField();
                         TextField SOtechID = new TextField();
                         TextField SOtechDealershipID = new TextField();
                         TextField Date = new TextField();
-                        textFeildsPane.add(new Label(
-                                "Feilds with * are optional. For the * feilds to be save all * need to be filled: "), 1,
-                                3);
-                        textFeildsPane.add(new Label("Cars VIN That is getting service: "), 0, 4);
-                        textFeildsPane.add(CarVin, 1, 4);
-                        textFeildsPane.add(new Label("What is the cars service*: "), 2, 4);
-                        textFeildsPane.add(ServiceDesc, 3, 4);
-                        textFeildsPane.add(new Label("Parts were used for the cars service*: "), 0, 5);
-                        textFeildsPane.add(partsUsed, 1, 5);
-                        textFeildsPane.add(new Label("What was the price of the parts used*: "), 2, 5);
-                        textFeildsPane.add(partCost, 3, 5);
-                        textFeildsPane.add(new Label("What was hours of labor for the service*: "), 0, 6);
-                        textFeildsPane.add(hoursLabor, 1, 6);
-                        textFeildsPane.add(new Label("What was the total cost of the service*: "), 2, 6);
-                        textFeildsPane.add(totalCost, 3, 6);
-                        textFeildsPane.add(new Label("What is the ID of the tech that was working on the car: "), 0, 7);
-                        textFeildsPane.add(SOtechID, 1, 7);
-                        textFeildsPane.add(new Label("What is the ID of the Dealership that the car got its service: "),
-                                2, 7);
-                        textFeildsPane.add(SOtechDealershipID, 3, 7);
+                        if (userType <= 3) {
+                            textFeildsPane.add(new Label(
+                                    "Feilds with * are optional. For the * feilds to be save all * need to be filled: "),
+                                    1, 3);
+                            textFeildsPane.add(new Label("Cars VIN That is getting service: "), 0, 4);
+                            textFeildsPane.add(CarVin, 1, 4);
+                            textFeildsPane.add(new Label("What is the cars service*: "), 2, 4);
+                            textFeildsPane.add(ServiceDesc, 3, 4);
+                            textFeildsPane.add(new Label("Parts were used for the cars service*: "), 0, 5);
+                            textFeildsPane.add(partsUsed, 1, 5);
+                            textFeildsPane.add(new Label("What was the price of the parts used*: "), 2, 5);
+                            textFeildsPane.add(partCost, 3, 5);
+                            textFeildsPane.add(new Label("What was hours of labor for the service*: "), 0, 6);
+                            textFeildsPane.add(hoursLabor, 1, 6);
+                            textFeildsPane.add(new Label("What was the total cost of the service*: "), 2, 6);
+                            textFeildsPane.add(totalCost, 3, 6);
+                            textFeildsPane.add(new Label("What is the ID of the tech that was working on the car: "), 0,
+                                    7);
+                            textFeildsPane.add(SOtechID, 1, 7);
+                            textFeildsPane.add(new Label("What is the Dealership that the car got its service at : "),
+                                    2, 7);
+                            textFeildsPane.add(dealerBox2, 3, 7);
+                        }
                         // adding a serivce order to the the table and list
                         addServiceOrder.setOnAction(new EventHandler<ActionEvent>() {
                             public void handle(ActionEvent e) {
-                                if (CarVin.getText().length() != 0 && SOtechDealershipID.getText().length() != 0
+                                if (CarVin.getText().length() != 0 && !dealerBox2.getValue().equals("")
                                         && SOtechID.getText().length() != 0) {
                                     try {
+                                        int selecetedDealerID = 0;
+                                        for (int i = 0; i < dealerships.size(); i++)
+                                            if (dealerBox2.getValue().equals(dealerships.get(i).dealerName))
+                                                selecetedDealerID = i;
                                         if (totalCost.getText().length() != 0 && partCost.getText().length() != 0
                                                 && hoursLabor.getText().length() != 0
                                                 && ServiceDesc.getText().length() != 0
@@ -318,8 +338,7 @@ public class finalProject extends Application {
 
                                             serviceOrders.add(new ServiceOrder(CarVin.getText(), ServiceDesc.getText(),
                                                     Date.getText(), partsUsed.getText(),
-                                                    Integer.parseInt(SOtechID.getText()),
-                                                    Integer.parseInt(SOtechDealershipID.getText()),
+                                                    Integer.parseInt(SOtechID.getText()), selecetedDealerID,
                                                     Double.parseDouble(partCost.getText()),
                                                     Double.parseDouble(totalCost.getText()),
                                                     Double.parseDouble(hoursLabor.getText())));
@@ -328,7 +347,7 @@ public class finalProject extends Application {
                                                     "INSERT INTO Service_Info (car_VIN, dealer_ID, tech_ID, service_date, service_description, parts_used, cost_of_parts, cost_of_service, labor_hours)"
                                                             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                                             preparedStatement.setString(1, CarVin.getText());
-                                            preparedStatement.setInt(2, Integer.parseInt(SOtechDealershipID.getText()));
+                                            preparedStatement.setInt(2, selecetedDealerID);
                                             preparedStatement.setInt(3, Integer.parseInt(SOtechID.getText()));
                                             preparedStatement.setString(4, Date.getText());
                                             preparedStatement.setString(5, ServiceDesc.getText());
@@ -339,13 +358,13 @@ public class finalProject extends Application {
                                             preparedStatement.executeUpdate();
                                         } else
                                             serviceOrders.add(new ServiceOrder(CarVin.getText(),
-                                                    Integer.parseInt(SOtechID.getText()),
-                                                    Integer.parseInt(SOtechDealershipID.getText()), Date.getText()));
+                                                    Integer.parseInt(SOtechID.getText()), selecetedDealerID,
+                                                    Date.getText()));
                                         PreparedStatement preparedStatement = connection.prepareStatement(
                                                 "INSERT INTO Service_Info (car_VIN, dealer_ID, tech_ID, service_date)"
                                                         + "VALUES (?, ?, ?, ?)");
                                         preparedStatement.setString(1, CarVin.getText());
-                                        preparedStatement.setInt(2, Integer.parseInt(SOtechDealershipID.getText()));
+                                        preparedStatement.setInt(2, selecetedDealerID);
                                         preparedStatement.setInt(3, Integer.parseInt(SOtechID.getText()));
                                         preparedStatement.setString(4, Date.getText());
                                         preparedStatement.executeUpdate();
@@ -400,9 +419,15 @@ public class finalProject extends Application {
 
                         });
 
-                        textFeildsPane.add(addServiceOrder, 0, 3);
-                        textFeildsPane.add(addDealerTech, 1, 0);
-                        textFeildsPane.add(addCar, 2, 0);
+                        if (userType <= 3)
+                            textFeildsPane.add(addServiceOrder, 0, 3);
+                        if (userType <= 2)
+                            textFeildsPane.add(addDealerTech, 1, 0);
+                        if (userType <= 3)
+                            textFeildsPane.add(addCar, 2, 0);
+                        if (userType <= 3)
+                            textFeildsPane.add(addOwner, 3, 0);
+                        textFeildsPane.add(changePassword, 4, 0);
                         // only admins can add new users and change users info
                         if (userType == 0)
                             textFeildsPane.add(addUser, 0, 0);
@@ -414,6 +439,7 @@ public class finalProject extends Application {
 
                         dealerBox.valueProperty().addListener(new ChangeListener<String>() {
                             @Override
+                            @SuppressWarnings("rawtypes")
                             public void changed(ObservableValue ov, String t, String t1) {
                                 serviceTable.setPlaceholder(new Label("No dealer has been selected"));
                                 ObservableList<ServiceOrder> recorders = FXCollections.observableArrayList();
@@ -442,7 +468,92 @@ public class finalProject extends Application {
                         });
 
                         pane.setCenter(serviceTable);
-                        Scene mainScene = new Scene(pane, 1200, 500);
+                        Scene mainScene = new Scene(pane, 1300, 500);
+                        changePassword.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent e) {
+                                GridPane passwordRestGridPane = new GridPane();
+                                BorderPane passwordRestMainPane = new BorderPane();
+                                Button setButton = new Button("Set New Password");
+                                passwordRestGridPane.setPadding(new Insets(15, 15, 15, 15));
+                                passwordRestGridPane.setHgap(5);
+                                passwordRestGridPane.setVgap(5);
+                                PasswordField oldPassword = new PasswordField();
+                                PasswordField newPassword = new PasswordField();
+                                PasswordField newConPassword = new PasswordField();
+                                passwordRestGridPane.add(new Label("Current Password: "), 0, 0);
+                                passwordRestGridPane.add(oldPassword, 1, 0);
+                                passwordRestGridPane.add(new Label("New Password: "), 0, 1);
+                                passwordRestGridPane.add(newPassword, 1, 1);
+                                passwordRestGridPane.add(new Label("New Confirm Password: "), 0, 2);
+                                passwordRestGridPane.add(newConPassword, 1, 2);
+    
+                                passwordRestGridPane.add(setButton, 2, 2);
+                                passwordRestMainPane.setCenter(passwordRestGridPane);
+                                setButton.setDefaultButton(true);
+                                setButton.setOnAction(new EventHandler<ActionEvent>() {
+                                    public void handle(ActionEvent ea) {
+                                        if (newPassword.getText().equals(newConPassword.getText())) {
+                                            if (!newPassword.getText().equals(oldPassword.getText())) {
+                                                try {
+                                                    if (vaildPassword(newPassword.getText())) {
+                                                        try {
+                                                            PreparedStatement preparedStatement = connection
+                                                                .prepareStatement("update Users SET salt = ?, hash = ?, pw_reset = 0 where user_ID = ?;");
+                                                        String[] passparts = hashPassword(newPassword.getText()).split(":");
+                                                        preparedStatement.setString(1, passparts[0]);
+                                                        preparedStatement.setString(2, passparts[1]);
+                                                        preparedStatement.setInt(3, userID);
+                                                        preparedStatement.executeUpdate();
+                                                         
+                                                            // naming the scene
+                                                            primaryStage.setTitle("Service Order Shower");
+                                                            // setting the scene
+                                                            primaryStage.setScene(mainScene);
+                                                        } catch (SQLException e1) {
+                                                            Alert a = new Alert(AlertType.ERROR);
+                                                            a.setContentText("update ERROR");
+                                                            // show the dialog
+                                                            a.show();
+                                                        }
+    
+                                                    } else {
+                                                        Alert a = new Alert(AlertType.ERROR);
+                                                        a.setContentText(
+                                                                "Passwords is not valid, passwords are to be a minimum of 10 characters, have a number, and a symbol");
+                                                        // show the dialog
+                                                        a.show();
+                                                    }
+                                                } catch (Exception e) {
+                                                    Alert a = new Alert(AlertType.ERROR);
+                                                    a.setContentText(
+                                                            "Passwords is not valid, passwords are to be a minimum of 10 characters, have a number, and a symbol");
+                                                    // show the dialog
+                                                    a.show();
+                                                }
+    
+                                            } else {
+                                                Alert a = new Alert(AlertType.ERROR);
+                                                a.setContentText("Passwords cannot be the same as before");
+                                                // show the dialog
+                                                a.show();
+                                            }
+                                        } else {
+                                            Alert a = new Alert(AlertType.ERROR);
+                                            a.setContentText("Passwords doesn't match");
+                                            // show the dialog
+                                            a.show();
+                                        }
+                                    }
+                                });
+    
+                                Scene passwordRestScene = new Scene(passwordRestMainPane, 400, 200);
+                                primaryStage.setTitle("Password Rest");
+                                // setting the scene
+                                primaryStage.setScene(passwordRestScene);
+                                primaryStage.show();
+                            }
+                        });
                         addUser.setOnAction(new EventHandler<ActionEvent>() {
                             @Override
                             public void handle(ActionEvent e) {
@@ -472,7 +583,6 @@ public class finalProject extends Application {
                                 } catch (Exception e2) {
                                     System.out.println(e2);
                                 }
-                                // TODO add
 
                                 final ComboBox<String> userTypeBox = new ComboBox<String>();
 
@@ -506,117 +616,132 @@ public class finalProject extends Application {
                                     public void handle(ActionEvent e) {
                                         if (!userTypeBox.getValue().equals("") && userNameField.getText() != "") {
                                             int index;
-                                            if (userTypeBox.getValue().equals("Owner")) index = 1;
-                                            else if (userTypeBox.getValue().equals("Manger")) index = 2;
-                                            else if (userTypeBox.getValue().equals("Sercive Advisor")) index = 3;
-                                            else  index = 4;
+                                            if (userTypeBox.getValue().equals("Owner"))
+                                                index = 1;
+                                            else if (userTypeBox.getValue().equals("Manger"))
+                                                index = 2;
+                                            else if (userTypeBox.getValue().equals("Sercive Advisor"))
+                                                index = 3;
+                                            else
+                                                index = 4;
                                             users.add(new User(userNameField.getText(), index));
-                                            
+
                                             try {
                                                 PreparedStatement preparedStatement = connection.prepareStatement(
-                                                    "INSERT INTO Users (user_Type, user_Name, pw_reset, salt, hash)"
-                                                            + "VALUES (?, ?, ?, ?, ?)");
-                                                preparedStatement.setInt(1, users.get(users.size()-1).getUserID());
-                                                preparedStatement.setString(2, users.get(users.size()-1).getUserName());
+                                                        "INSERT INTO Users (user_Type, user_Name, pw_reset, salt, hash)"
+                                                                + "VALUES (?, ?, ?, ?, ?)");
+                                                preparedStatement.setInt(1, users.get(users.size() - 1).getUserID());
+                                                preparedStatement.setString(2,
+                                                        users.get(users.size() - 1).getUserName());
                                                 preparedStatement.setInt(3, 1);
                                                 String[] parts = hashPassword("password").split(":");
                                                 preparedStatement.setString(4, parts[0]);
                                                 preparedStatement.setString(5, parts[1]);
                                                 preparedStatement.executeUpdate();
                                             } catch (Exception e1) {
-                                                // TODO Auto-generated catch block
                                                 e1.printStackTrace();
                                             }
-                                    }
-                                }
-                            });
-                            TableColumn<User, String> userNameColumn = new TableColumn<>("User Name");
-                            userNameColumn.setMinWidth(300);
-                            userNameColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
-                            userNameColumn.setCellFactory(TextFieldTableCell.<User>forTableColumn());
-                            userNameColumn.setOnEditCommit((CellEditEvent<User, String> t) -> {
-                                ((User) t.getTableView().getItems()
-                                .get(t.getTablePosition().getRow()))
-                                        .setUserName((t.getNewValue()));
-                                try {
-                                    PreparedStatement preparedStatement = connection.prepareStatement(
-                                    "update Users SET user_Name = ? where user_ID = ?");
-                                    preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserName());
-                                    preparedStatement.setInt(2, (t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserID()));
-                                    preparedStatement.executeUpdate();
-                                } catch (SQLException e1) {
-                                    Alert a = new Alert(AlertType.ERROR);
-                                    a.setContentText("update ERROR");
-                                    // show the dialog
-                                    
-                                    a.show();
-                                }
+                                        } else {
 
+                                            a.setContentText("There is an empty field");
 
-                            });     
-                            TableColumn<User, String> userTypeColumn = new TableColumn<>("User Type");
-                            userTypeColumn.setMinWidth(200);
-                            userTypeColumn.setCellValueFactory(new PropertyValueFactory<>("tableUserType"));
-                            userTypeColumn.setCellFactory(ComboBoxTableCell.forTableColumn(userTypeBox.getItems()));
-                            userTypeColumn.setOnEditCommit((CellEditEvent<User, String> t) -> {
-                                ((User) t.getTableView().getItems()
-                                .get(t.getTablePosition().getRow()))
-                                        .setUserType(t.getNewValue());
-                                try {
-                                    PreparedStatement preparedStatement = connection.prepareStatement(
-                                    "update Users SET user_Type = ? where user_ID = ?");
-                                    preparedStatement.setInt(1,t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserType());
-                                    preparedStatement.setInt(2, (t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserID()));
-                                    preparedStatement.executeUpdate();
-                                        } catch (SQLException e1) {
-                                            Alert a = new Alert(AlertType.ERROR);
-                                            a.setContentText("update ERROR");
                                             // show the dialog
                                             a.show();
-                                        }
-                            });  
-                            TableColumn<User, String> userIDColumn = new TableColumn<>("User ID");
-                            userIDColumn.setMinWidth(100);
-                            userIDColumn.setCellValueFactory(new PropertyValueFactory<>("tableUserID"));
-                            
-                            TableColumn<User, Boolean> userPasswordColumn = new TableColumn<>("User Password Reset");
-                            userPasswordColumn.setMinWidth(300);
-                            userPasswordColumn.setCellValueFactory(new PropertyValueFactory<>("passwordRest"));
-                            // userPasswordColumn.setCellFactory(CheckBoxTableCell.forTableColumn(userPasswordColumn));
-                            // userPasswordColumn.setOnAction((CellEditEvent<User, Boolean> t) -> {
-                            //     ((User) t.getTableView().getItems()
-                            //     .get(t.getTablePosition().getRow()))
-                            //             .setPasswordRest(t.getNewValue());
-                            //             Alert sa = new Alert(AlertType.ERROR);
-                            //             sa.setContentText("update ERROR");
-                            //             // show the dialog
-                            //             sa.show();
-                            //     try {
-                            //         PreparedStatement preparedStatement = connection.prepareStatement(
-                            //         "update Users SET pw_reset = ? where user_ID = ?");
-                            //         preparedStatement.setInt(1,t.getTableView().getItems().get(t.getTablePosition().getRow()).getDBPasswordRest());
-                            //         preparedStatement.setInt(2, (t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserID()));
-                            //         preparedStatement.executeUpdate();
-                            //         } catch (SQLException e1) {
-                            //             Alert a = new Alert(AlertType.ERROR);
-                            //             a.setContentText("update ERROR");
-                            //             // show the dialog
-                            //             a.show();
-                            //         }            
 
-                           // });
-                            userTable.getColumns().add(userIDColumn);
-                            userTable.getColumns().add(userNameColumn);
-                            userTable.getColumns().add(userTypeColumn);
-                            if(userType == 0) userTable.getColumns().add(userPasswordColumn);
-                            userMainPane.setTop(userTextPane);
-                            userMainPane.setBottom(userTable);
-                            userTable.setItems(users);
-                            Scene userScene = new Scene(userMainPane, 1500, 350);
-                            userTable.setEditable(true);
-                            primaryStage.setTitle("User Panel");
-                            primaryStage.setScene(userScene);
-                            primaryStage.show();    
+                                        }
+                                    }
+                                });
+                                TableColumn<User, String> userNameColumn = new TableColumn<>("User Name");
+                                userNameColumn.setMinWidth(300);
+                                userNameColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
+                                userNameColumn.setCellFactory(TextFieldTableCell.<User>forTableColumn());
+                                userNameColumn.setOnEditCommit((CellEditEvent<User, String> t) -> {
+                                    ((User) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                            .setUserName((t.getNewValue()));
+                                    try {
+                                        PreparedStatement preparedStatement = connection
+                                                .prepareStatement("update Users SET user_Name = ? where user_ID = ?");
+                                        preparedStatement.setString(1, t.getTableView().getItems()
+                                                .get(t.getTablePosition().getRow()).getUserName());
+                                        preparedStatement.setInt(2, (t.getTableView().getItems()
+                                                .get(t.getTablePosition().getRow()).getUserID()));
+                                        preparedStatement.executeUpdate();
+                                    } catch (SQLException e1) {
+                                        Alert a = new Alert(AlertType.ERROR);
+                                        a.setContentText("update ERROR");
+                                        // show the dialog
+
+                                        a.show();
+                                    }
+
+                                });
+                                TableColumn<User, String> userTypeColumn = new TableColumn<>("User Type");
+                                userTypeColumn.setMinWidth(200);
+                                userTypeColumn.setCellValueFactory(new PropertyValueFactory<>("tableUserType"));
+                                userTypeColumn.setCellFactory(ComboBoxTableCell.forTableColumn(userTypeBox.getItems()));
+                                userTypeColumn.setOnEditCommit((CellEditEvent<User, String> t) -> {
+                                    ((User) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                            .setUserType(t.getNewValue());
+                                    try {
+                                        PreparedStatement preparedStatement = connection
+                                                .prepareStatement("update Users SET user_Type = ? where user_ID = ?");
+                                        preparedStatement.setInt(1, t.getTableView().getItems()
+                                                .get(t.getTablePosition().getRow()).getUserType());
+                                        preparedStatement.setInt(2, (t.getTableView().getItems()
+                                                .get(t.getTablePosition().getRow()).getUserID()));
+                                        preparedStatement.executeUpdate();
+                                    } catch (SQLException e1) {
+                                        Alert a = new Alert(AlertType.ERROR);
+                                        a.setContentText("update ERROR");
+                                        // show the dialog
+                                        a.show();
+                                    }
+                                });
+                                TableColumn<User, String> userIDColumn = new TableColumn<>("User ID");
+                                userIDColumn.setMinWidth(100);
+                                userIDColumn.setCellValueFactory(new PropertyValueFactory<>("tableUserID"));
+
+                                TableColumn<User, Boolean> userPasswordColumn = new TableColumn<>(
+                                        "User Password Reset");
+                                userPasswordColumn.setMinWidth(300);
+                                userPasswordColumn.setCellValueFactory(new PropertyValueFactory<>("passwordRest"));
+                                // userPasswordColumn.setCellFactory(CheckBoxTableCell.forTableColumn(userPasswordColumn));
+                                // userPasswordColumn.setOnAction((CellEditEvent<User, Boolean> t) -> {
+                                // ((User) t.getTableView().getItems()
+                                // .get(t.getTablePosition().getRow()))
+                                // .setPasswordRest(t.getNewValue());
+                                // Alert sa = new Alert(AlertType.ERROR);
+                                // sa.setContentText("update ERROR");
+                                // // show the dialog
+                                // sa.show();
+                                // try {
+                                // PreparedStatement preparedStatement = connection.prepareStatement(
+                                // "update Users SET pw_reset = ? where user_ID = ?");
+                                // preparedStatement.setInt(1,t.getTableView().getItems().get(t.getTablePosition().getRow()).getDBPasswordRest());
+                                // preparedStatement.setInt(2,
+                                // (t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserID()));
+                                // preparedStatement.executeUpdate();
+                                // } catch (SQLException e1) {
+                                // Alert a = new Alert(AlertType.ERROR);
+                                // a.setContentText("update ERROR");
+                                // // show the dialog
+                                // a.show();
+                                // }
+
+                                // });
+                                userTable.getColumns().add(userIDColumn);
+                                userTable.getColumns().add(userNameColumn);
+                                userTable.getColumns().add(userTypeColumn);
+                                if (userType == 0)
+                                    userTable.getColumns().add(userPasswordColumn);
+                                userMainPane.setTop(userTextPane);
+                                userMainPane.setBottom(userTable);
+                                userTable.setItems(users);
+                                Scene userScene = new Scene(userMainPane, 1500, 350);
+                                userTable.setEditable(true);
+                                primaryStage.setTitle("User Panel");
+                                primaryStage.setScene(userScene);
+                                primaryStage.show();
                             }
                         });
                         // load the add car scene and the needed items for that
@@ -626,7 +751,10 @@ public class finalProject extends Application {
 
                                 GridPane pane2 = new GridPane();
                                 BorderPane scenePane = new BorderPane();
-
+                                final ComboBox<String> ownerBox = new ComboBox<String>();
+                                for(int i  = 0; i < owners.size(); i++){
+                                    ownerBox.getItems().add(owners.get(i).getFirstName() + " " + owners.get(i).getLastName());
+                                }
                                 TableView<Car> carTable = new TableView<Car>();
                                 carTable.setEditable(true);
                                 // Table Columes and sizes
@@ -672,23 +800,27 @@ public class finalProject extends Application {
                                 TableColumn<Car, String> ownerColumn = new TableColumn<>("Owner");
                                 ownerColumn.setMinWidth(400);
                                 ownerColumn.setCellValueFactory(new PropertyValueFactory<>("owner"));
-                                ownerColumn.setCellFactory(TextFieldTableCell.<Car>forTableColumn());
+                                ownerColumn.setCellFactory(ComboBoxTableCell.forTableColumn(ownerBox.getItems()));
                                 ownerColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
                                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                                             .setOwner(t.getNewValue());
-                                    // try {
-                                    // PreparedStatement preparedStatement = connection.prepareStatement("update
-                                    // Car_Info car_mileage = ? where car_VIN = ?");
-                                    // preparedStatement.setInt(1,
-                                    // t.getTableView().getItems().get(t.getTablePosition().getRow()).getMileage());
-                                    // preparedStatement.setString(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getVin()));
-                                    // preparedStatement.executeUpdate();
-                                    // } catch (SQLException e1) {
-                                    // Alert a = new Alert(AlertType.ERROR);
-                                    // a.setContentText("update ERROR");
-                                    // // show the dialog
-                                    // a.show();
-                                    // }
+                                    int ownerID = 0;
+                                    for(int i  = 0; i < owners.size(); i++){
+                                        if(t.getNewValue().contains(owners.get(i).getFirstName()) && t.getNewValue().contains(owners.get(i).getLastName()) ){
+                                            ownerID = i+1;
+                                        }
+                                    }
+                                    try {
+                                    PreparedStatement preparedStatement = connection.prepareStatement("update Car_Info set owner_ID = ? where car_VIN = ?");
+                                    preparedStatement.setInt(1, ownerID);
+                                    preparedStatement.setString(2,(t.getTableView().getItems().get(t.getTablePosition().getRow()).getVin()));
+                                    preparedStatement.executeUpdate();
+                                    } catch (SQLException e1) {
+                                    Alert a = new Alert(AlertType.ERROR);
+                                    a.setContentText("update ERROR");
+                                    // show the dialog
+                                    a.show();
+                                    }
                                 });
                                 TableColumn<Car, String> serviceDateColumn = new TableColumn<>("Service Date");
                                 serviceDateColumn.setMinWidth(400);
@@ -697,6 +829,7 @@ public class finalProject extends Application {
                                 serviceDateColumn.setOnEditCommit((CellEditEvent<Car, String> t) -> {
                                     ((Car) t.getTableView().getItems().get(t.getTablePosition().getRow()))
                                             .setServiceDate(t.getNewValue());
+                                    
                                     try {
                                         PreparedStatement preparedStatement = connection.prepareStatement(
                                                 "update Car_Info SET date_of_last_service = ? where car_VIN = ?");
@@ -730,7 +863,7 @@ public class finalProject extends Application {
                                 pane2.add(new Label("Year: "), 2, 0);
                                 pane2.add(year, 3, 0);
                                 pane2.add(new Label("Owner: "), 2, 1);
-                                pane2.add(owner, 3, 1);
+                                pane2.add(ownerBox, 3, 1);
                                 pane2.add(new Label("Service Date: "), 2, 2);
                                 pane2.add(serviceDate, 3, 2);
                                 pane2.add(new Label("Mileage: "), 2, 3);
@@ -745,7 +878,6 @@ public class finalProject extends Application {
                                 pane2.add(addButton, 0, 3);
 
                                 carTable.setItems(Cars);
-                                System.out.println(Cars.toString());
 
                                 scenePane.setTop(pane2);
                                 scenePane.setBottom(carTable);
@@ -763,12 +895,18 @@ public class finalProject extends Application {
                                     public void handle(ActionEvent e) {
                                         if (vin.getText().length() != 0 && make.getText().length() != 0
                                                 && model.getText().length() != 0 && year.getText().length() != 0
-                                                && owner.getText().length() != 0 && mileage.getText().length() != 0) {
+                                                && ownerBox.getValue().length() != 0 && mileage.getText().length() != 0) {
                                             if (Cars.get(0).CheckVin(vin.getText())) {
+                                                int ownerID = 0;
+                                                for(int i  = 0; i < owners.size(); i++){
+                                                    if(ownerBox.getValue().contains(owners.get(i).getFirstName()) && ownerBox.getValue().contains(owners.get(i).getLastName()) ){
+                                                        ownerID = i;
+                                                    }
+                                                }
                                                 Cars.add(new Car(vin.getText(), make.getText(), model.getText(),
                                                         Integer.parseInt(year.getText()),
                                                         Integer.parseInt(mileage.getText()), serviceDate.getText(),
-                                                        owner.getText()));
+                                                        ownerBox.getValue()));
                                                 try {
                                                     PreparedStatement preparedStatement = connection.prepareStatement(
                                                             "INSERT INTO Car_Info (car_VIN, car_make, car_model, car_year, car_mileage, date_of_last_service, owner_ID)"
@@ -779,7 +917,7 @@ public class finalProject extends Application {
                                                     preparedStatement.setInt(4, Integer.parseInt(year.getText()));
                                                     preparedStatement.setInt(5, Integer.parseInt(mileage.getText()));
                                                     preparedStatement.setString(6, serviceDate.getText());
-                                                    // preparedStatement.setInt(7, owner.getText());
+                                                    preparedStatement.setInt(7, ownerID);
                                                     preparedStatement.executeUpdate();
                                                 } catch (Exception e1) {
                                                 }
@@ -812,7 +950,205 @@ public class finalProject extends Application {
                                 primaryStage.setScene(carScene);
                             }
                         });
+                        addOwner.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent e) {
+                                GridPane ownerTextPane = new GridPane();
+                                BorderPane ownerMainPane = new BorderPane();
+                                ownerTextPane.setPadding(new Insets(15, 15, 15, 15));
+                                ownerTextPane.setHgap(5);
+                                ownerTextPane.setVgap(5);
 
+                                TableView<Owner> ownerTable = new TableView<Owner>();
+                                TableColumn<Owner, String> ownerIDColumn = new TableColumn<>("Owner ID");
+                                ownerIDColumn.setMinWidth(100);
+                                ownerIDColumn.setCellValueFactory(new PropertyValueFactory<>("tableOwnerID"));
+
+                                TableColumn<Owner, String> firstNameColumn = new TableColumn<>("First Name");
+                                firstNameColumn.setMinWidth(200);
+                                firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+                                firstNameColumn.setCellFactory(TextFieldTableCell.<Owner>forTableColumn());
+                                firstNameColumn.setOnEditCommit((CellEditEvent<Owner, String> t) -> {
+                                    ((Owner) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                            .setFirstName(t.getNewValue());
+                                    try {
+                                        PreparedStatement preparedStatement = connection.prepareStatement(
+                                                "update Car_Owner SET owner_firstName = ? where owner_ID = ?");
+                                        preparedStatement.setString(1, t.getTableView().getItems()
+                                                .get(t.getTablePosition().getRow()).getFirstName());
+                                        preparedStatement.setInt(2, (t.getTableView().getItems()
+                                                .get(t.getTablePosition().getRow()).getOwnerID()));
+                                        preparedStatement.executeUpdate();
+                                    } catch (SQLException e1) {
+                                        Alert a = new Alert(AlertType.ERROR);
+                                        a.setContentText("update ERROR");
+                                        // show the dialog
+                                        a.show();
+                                    }
+                                });
+
+                                TableColumn<Owner, String> lastNameColumn = new TableColumn<>("Last Name");
+                                lastNameColumn.setMinWidth(200);
+                                lastNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+                                lastNameColumn.setCellFactory(TextFieldTableCell.<Owner>forTableColumn());
+                                lastNameColumn.setOnEditCommit((CellEditEvent<Owner, String> t) -> {
+                                    ((Owner) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                            .setLastName(t.getNewValue());
+                                    try {
+                                        PreparedStatement preparedStatement = connection.prepareStatement(
+                                                "update Car_Owner SET owner_lastName = ? where owner_ID = ?");
+                                        preparedStatement.setString(1, t.getTableView().getItems()
+                                                .get(t.getTablePosition().getRow()).getLastName());
+                                        preparedStatement.setInt(2, (t.getTableView().getItems()
+                                                .get(t.getTablePosition().getRow()).getOwnerID()));
+                                        preparedStatement.executeUpdate();
+                                    } catch (SQLException e1) {
+                                        Alert a = new Alert(AlertType.ERROR);
+                                        a.setContentText("update ERROR");
+                                        // show the dialog
+                                        a.show();
+                                    }
+                                });
+                                TableColumn<Owner, String> phoneNumColumn = new TableColumn<>("Phone Number");
+                                phoneNumColumn.setMinWidth(200);
+                                phoneNumColumn.setCellValueFactory(new PropertyValueFactory<>("phoneNumer"));
+                                phoneNumColumn.setCellFactory(TextFieldTableCell.<Owner>forTableColumn());
+                                phoneNumColumn.setOnEditCommit((CellEditEvent<Owner, String> t) -> {
+                                    ((Owner) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                            .setPhoneNumer(t.getNewValue());
+                                    try {
+                                        PreparedStatement preparedStatement = connection.prepareStatement(
+                                                "update Car_Owner SET phone_num = ? where owner_ID = ?");
+                                        preparedStatement.setString(1, t.getTableView().getItems()
+                                                .get(t.getTablePosition().getRow()).getPhoneNumer());
+                                        preparedStatement.setInt(2, (t.getTableView().getItems()
+                                                .get(t.getTablePosition().getRow()).getOwnerID()));
+                                        preparedStatement.executeUpdate();
+                                    } catch (SQLException e1) {
+                                        Alert a = new Alert(AlertType.ERROR);
+                                        a.setContentText("update ERROR");
+                                        // show the dialog
+                                        a.show();
+                                    }
+                                });
+                                TableColumn<Owner, String> emailColumn = new TableColumn<>("Email");
+                                emailColumn.setMinWidth(400);
+                                emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+                                emailColumn.setCellFactory(TextFieldTableCell.<Owner>forTableColumn());
+                                emailColumn.setOnEditCommit((CellEditEvent<Owner, String> t) -> {
+                                    if (emailChecker(t.getNewValue())) {
+                                        ((Owner) t.getTableView().getItems().get(t.getTablePosition().getRow()))
+                                                .setEmail(t.getNewValue());
+
+                                        try {
+                                            PreparedStatement preparedStatement = connection.prepareStatement(
+                                                    "update Car_Owner SET phone_num = ? where owner_ID = ?");
+                                            preparedStatement.setString(1, t.getTableView().getItems()
+                                                    .get(t.getTablePosition().getRow()).getEmail());
+                                            preparedStatement.setInt(2, (t.getTableView().getItems()
+                                                    .get(t.getTablePosition().getRow()).getOwnerID()));
+                                            preparedStatement.executeUpdate();
+                                        } catch (SQLException e1) {
+                                            Alert a = new Alert(AlertType.ERROR);
+                                            a.setContentText("update ERROR");
+                                            // show the dialog
+                                            a.show();
+                                        }
+                                    } else {
+                                        a.setContentText("Invalied Email");
+                                        // show the dialog
+                                        a.show();
+                                    }
+                                });
+                                ownerTable.getColumns().add(ownerIDColumn);
+                                ownerTable.getColumns().add(firstNameColumn);
+                                ownerTable.getColumns().add(lastNameColumn);
+                                ownerTable.getColumns().add(phoneNumColumn);
+                                ownerTable.getColumns().add(emailColumn);
+
+                                Button addNewOwnerButton = new Button("Add New User");
+                                TextField ownerFirstNameField = new TextField();
+                                TextField ownerLastNameField = new TextField();
+                                TextField ownerPhoneNumField = new TextField();
+                                TextField ownerEmailField = new TextField();
+                                Button backButton = new Button("Back");
+
+                                ownerTextPane.add((new Label("First Name: ")), 0, 0);
+                                ownerTextPane.add(ownerFirstNameField, 0, 1);
+
+                                ownerTextPane.add((new Label("Last Name: ")), 1, 0);
+                                ownerTextPane.add(ownerLastNameField, 1, 1);
+                                ownerTextPane.add((new Label("Phone Number: ")), 0, 2);
+                                ownerTextPane.add(ownerPhoneNumField, 0, 3);
+                                ownerTextPane.add((new Label("Email: ")), 1, 2);
+                                ownerTextPane.add(ownerEmailField, 1, 3);
+
+                                ownerTextPane.add(addNewOwnerButton, 2, 4);
+                                ownerTextPane.add(backButton, 0, 4);
+                                backButton.setOnAction(new EventHandler<ActionEvent>() {
+                                    @Override
+                                    public void handle(ActionEvent e) {
+                                        primaryStage.setScene(mainScene);
+                                        primaryStage.setTitle("Service Order Shower");
+                                    }
+                                });
+                                addNewOwnerButton.setOnAction(new EventHandler<ActionEvent>() {
+                                    @Override
+                                    public void handle(ActionEvent e) {
+                                        if (ownerFirstNameField.getText().length() != 0
+                                                && ownerLastNameField.getText().length() != 0
+                                                && ownerPhoneNumField.getText().length() != 0
+                                                && ownerEmailField.getText().length() != 0) {
+                                            if (emailChecker(ownerEmailField.getText())) {
+                                                // adding Dealer to the Software store
+                                                try {
+                                                    PreparedStatement preparedStatement = connection.prepareStatement(
+                                                            "INSERT INTO Car_Owner (owner_firstName, owner_lastName, phone_num, owner_email)"
+                                                                    + "VALUES (?, ?, ?, ?)");
+                                                    preparedStatement.setString(1, ownerFirstNameField.getText());
+                                                    preparedStatement.setString(2, ownerLastNameField.getText());
+                                                    preparedStatement.setString(3, ownerPhoneNumField.getText());
+                                                    preparedStatement.setString(4, ownerEmailField.getText());
+
+                                                    preparedStatement.executeUpdate();
+                                                    owners.add(new Owner(ownerFirstNameField.getText(),
+                                                            ownerLastNameField.getText(), ownerPhoneNumField.getText(),
+                                                            ownerEmailField.getText()));
+
+                                                } catch (Exception ownerException) {
+                                                    Alert a = new Alert(AlertType.ERROR);
+                                                    a.setContentText("Adding DB ERROR");
+                                                    // show the dialog
+                                                    a.show();
+                                                }
+                                            } else {
+                                                a.setContentText("Email Not valid");
+
+                                                // show the dialog
+                                                a.show();
+                                            }
+
+                                        } else {
+                                            a.setContentText("There is an empty field");
+
+                                            // show the dialog
+                                            a.show();
+                                        }
+
+                                    }
+                                });
+                                ownerTable.setEditable(true);
+                                ownerTable.setItems(owners);
+                                ownerMainPane.setTop(ownerTextPane);
+                                ownerMainPane.setBottom(ownerTable);
+                                Scene ownerScene = new Scene(ownerMainPane, 1500, 350);
+
+                                primaryStage.setTitle("Owner Shower and Adder");
+                                // setting the scene
+                                primaryStage.setScene(ownerScene);
+                                primaryStage.show();
+                            }
+                        });
                         // load the add Dealer and Tech scene and the needed items for that
                         addDealerTech.setOnAction(new EventHandler<ActionEvent>() {
                             @Override
@@ -951,7 +1287,8 @@ public class finalProject extends Application {
                                     }
                                 });
 
-                                TableColumn<Dealership.ServiceTech, String> techNameColumn = new TableColumn<>("Tech Name");
+                                TableColumn<Dealership.ServiceTech, String> techNameColumn = new TableColumn<>(
+                                        "Tech Name");
                                 techNameColumn.setMinWidth(200);
                                 techNameColumn.setCellValueFactory(new PropertyValueFactory<>("techName"));
                                 techNameColumn
@@ -1073,7 +1410,7 @@ public class finalProject extends Application {
                                         }
                                     }
                                 });
-                               
+
                                 // adds the information to the dealer collection and saves the data
                                 addDealerButton.setOnAction(new EventHandler<ActionEvent>() {
                                     @Override
@@ -1138,12 +1475,96 @@ public class finalProject extends Application {
                                 primaryStage.setScene(dealersScene);
                             }
                         });
+                        
+                        if (passwordRest) {
+                            GridPane passwordRestGridPane = new GridPane();
+                            BorderPane passwordRestMainPane = new BorderPane();
+                            Button setButton = new Button("Set New Password");
+                            passwordRestGridPane.setPadding(new Insets(15, 15, 15, 15));
+                            passwordRestGridPane.setHgap(5);
+                            passwordRestGridPane.setVgap(5);
+                            PasswordField oldPassword = new PasswordField();
+                            PasswordField newPassword = new PasswordField();
+                            PasswordField newConPassword = new PasswordField();
+                            passwordRestGridPane.add(new Label("Current Password: "), 0, 0);
+                            passwordRestGridPane.add(oldPassword, 1, 0);
+                            passwordRestGridPane.add(new Label("New Password: "), 0, 1);
+                            passwordRestGridPane.add(newPassword, 1, 1);
+                            passwordRestGridPane.add(new Label("New Confirm Password: "), 0, 2);
+                            passwordRestGridPane.add(newConPassword, 1, 2);
 
-                        // naming the scene
-                        primaryStage.setTitle("Service Order Shower");
-                        // setting the scene
-                        primaryStage.setScene(mainScene);
-                        primaryStage.show();
+                            passwordRestGridPane.add(setButton, 2, 2);
+                            passwordRestMainPane.setCenter(passwordRestGridPane);
+                            setButton.setDefaultButton(true);
+                            setButton.setOnAction(new EventHandler<ActionEvent>() {
+                                public void handle(ActionEvent ea) {
+                                    if (newPassword.getText().equals(newConPassword.getText())) {
+                                        if (!newPassword.getText().equals(oldPassword.getText())) {
+                                            try {
+                                                if (vaildPassword(newPassword.getText())) {
+                                                    try {
+
+                                                        PreparedStatement preparedStatement = connection
+                                                                .prepareStatement("update Users SET salt = ?, hash = ?, pw_reset = 0 where user_ID = ?;");
+                                                        String[] parts = hashPassword(newPassword.getText()).split(":");
+                                                        preparedStatement.setString(1, parts[0]);
+                                                        preparedStatement.setString(2, parts[1]);
+                                                        preparedStatement.setInt(3, userID);
+                                                        preparedStatement.executeUpdate();
+                                                        // naming the scene
+                                                        primaryStage.setTitle("Service Order Shower");
+                                                        // setting the scene
+                                                        primaryStage.setScene(mainScene);
+                                                    } catch (SQLException e1) {
+                                                        Alert a = new Alert(AlertType.ERROR);
+                                                        a.setContentText("update ERROR");
+                                                        //TODO show the dialog
+                                                        a.show();
+                                                    }
+
+                                                } else {
+                                                    Alert a = new Alert(AlertType.ERROR);
+                                                    a.setContentText("Passwords is not valid, passwords are to be a minimum of 10 characters, have a number, and a symbol");
+                                                    // show the dialog
+                                                    a.show();
+                                                }
+                                            } catch (Exception e) {
+                                                Alert a = new Alert(AlertType.ERROR);
+                                                a.setContentText(
+                                                        "Passwords is not valid, passwords are to be a minimum of 10 characters, have a number, and a symbol");
+                                                // show the dialog
+                                                a.show();
+                                            }
+
+                                        } else {
+                                            Alert a = new Alert(AlertType.ERROR);
+                                            a.setContentText("Passwords cannot be the same as before");
+                                            // show the dialog
+                                            a.show();
+                                        }
+                                    } else {
+                                        Alert a = new Alert(AlertType.ERROR);
+                                        a.setContentText("Passwords doesn't match");
+                                        // show the dialog
+                                        a.show();
+                                    }
+                                }
+                            });
+
+                            Scene passwordRestScene = new Scene(passwordRestMainPane, 400, 200);
+                            primaryStage.setTitle("Password Rest");
+                            // setting the scene
+                            primaryStage.setScene(passwordRestScene);
+                            primaryStage.show();
+                        } else {
+
+
+                            // naming the scene
+                            primaryStage.setTitle("Service Order Shower");
+                            // setting the scene
+                            primaryStage.setScene(mainScene);
+                            primaryStage.show();
+                        }
                     } else {
                         Alert a = new Alert(AlertType.ERROR);
                         a.setContentText("Wrong password or username. Please try again");
@@ -1157,11 +1578,11 @@ public class finalProject extends Application {
                 }
             }
         });
-         // naming the scene
-         primaryStage.setTitle("login page");
-         // setting the scene
-         primaryStage.setScene(loginScene);
-         primaryStage.show();
+        // naming the scene
+        primaryStage.setTitle("login page");
+        // setting the scene
+        primaryStage.setScene(loginScene);
+        primaryStage.show();
     }
 
     // used to remove used data from a string for the txt file
@@ -1176,8 +1597,7 @@ public class finalProject extends Application {
         try {
             // Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
-            // connection.setAutoCommit(false);
-            System.out.println("Opened database successfully");
+            
             Statement stmt = null;
 
             stmt = connection.createStatement();
@@ -1193,9 +1613,8 @@ public class finalProject extends Application {
                 int mileage = rs.getInt("car_mileage");
                 String serviceDate = null;
 
-                String owner = connection.createStatement()
-                        .executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID"))
-                        .getString("owner_firstName");
+                String owner = connection.createStatement().executeQuery("select owner_firstName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_firstName");
+                owner = owner + connection.createStatement().executeQuery("select owner_lastName from Car_Owner where owner_ID = " + rs.getInt("owner_ID")).getString("owner_lastName");
                 Cars.add(new Car(VIN, make, model, year, mileage, serviceDate, owner));
 
             }
@@ -1237,21 +1656,38 @@ public class finalProject extends Application {
 
                 serviceOrders.add(new ServiceOrder(carVIN, serviceDesc, serviceDate, partsUsed, techID, dealershipID,
                         partsCost, totalCost, laborHours));
-                rs.close();
-                stmt.close();
+
             }
 
+            rs = stmt.executeQuery("SELECT * FROM Car_Owner;");
+
+            // adding Dealer to the Software store
+            while (rs.next()) {
+                String ownerFirstName = rs.getString("owner_firstName");
+                String ownerLastName = rs.getString("owner_lastName");
+                String ownerPhoneNumer = rs.getString("phone_num");
+                String ownerEmail = rs.getString("owner_email");
+                owners.add(new Owner(ownerFirstName, ownerLastName, ownerPhoneNumer, ownerEmail));
+            }
+
+            rs.close();
+            stmt.close();
+
         } catch (Exception e) {
-            System.out.println("PLEASE HELP ME: " + e);
+            Alert a = new Alert(AlertType.ERROR);
+            a.setContentText("Something is wrong when accessing the database");
+
+            // show the dialog
+            a.show();
         }
 
     }
 
     private static Boolean vaildPassword(String Password) throws NoSuchAlgorithmException, InvalidKeySpecException {
 
-        if (Password.length() > 10) {
+        if (Password.length() >= 10) {
             if (isNumeric(Password)) {
-                if (Password.matches("[A-Za-z0-9 ]*")) {
+                if (!Password.matches("[A-Za-z0-9 ]*")) {
                     return true;
                 }
             }
@@ -1262,15 +1698,18 @@ public class finalProject extends Application {
 
     }
 
-    private static Boolean correctPassword(String Password, String Username) throws SQLException,
-            NoSuchAlgorithmException, InvalidKeySpecException {
+    private static Boolean correctPassword(String Password, String Username)
+            throws SQLException, NoSuchAlgorithmException, InvalidKeySpecException {
         connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
-    try {
-        PreparedStatement ps = connection.prepareStatement("SELECT * from Users where user_name = ?");
+        try {
+            PreparedStatement ps = connection.prepareStatement("SELECT * from Users where user_name = ?");
             ps.setString(1, Username);
             ResultSet rs = ps.executeQuery();
 
             userType = rs.getInt("user_Type");
+            userID = rs.getInt("user_ID");
+            int passrest = rs.getInt("pw_reset");
+            if (passrest == 1) passwordRest = true;
             String hash = rs.getString("hash");
             String salt = rs.getString("salt");
             return checkingPassword(hash, salt, Password);
@@ -1282,12 +1721,11 @@ public class finalProject extends Application {
         
     }
     public static boolean isNumeric(String string) {
-        try {  
-            Double.parseDouble(string);  
-            return true;
-          } catch(NumberFormatException e){  
-            return false;  
-          }   
+  
+
+            
+            return string.matches("(?=.*[0-9]).*") ;
+           
     }  
 //checks if the password entered eqauls the old password
     private static Boolean checkingPassword(String passwordHash, String Salt, String tryingPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -1348,6 +1786,13 @@ public class finalProject extends Application {
             bytes[i] = (byte) Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
         }
         return bytes;
+    }
+    static boolean emailChecker(String email){
+
+        if(email.contains("@") && email.contains(".")){
+            return true;
+        }
+        return false;
     }
 
     public static void main(String[] args) {
