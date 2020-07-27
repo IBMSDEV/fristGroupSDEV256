@@ -33,6 +33,8 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -43,6 +45,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 public class finalProject extends Application {
     static Connection connection = null;
     static int userType = 0;
+    Boolean passwordRest; 
     TextField username = new TextField();
     PasswordField password = new PasswordField();
     // text fields for editing and adding data for the other scenes
@@ -79,13 +82,15 @@ public class finalProject extends Application {
         BorderPane panes = new BorderPane();
         Button loginButton = new Button("Login");
         loginPane.setPadding(new Insets(15, 15, 15, 15));
+        loginPane.setHgap(5);
+        loginPane.setVgap(5);
         loginPane.add(new Label("Username: "), 0, 0);
-        loginPane.add(username, 0, 1);
-        loginPane.add(new Label("Password: "), 1, 0);
+        loginPane.add(username, 1,0);
+        loginPane.add(new Label("Password: "), 0, 1);
         loginPane.add(password, 1, 1);
-        loginPane.add(loginButton, 0, 2);
+        loginPane.add(loginButton, 2, 2);
         panes.setCenter(loginPane);
-        Scene loginScene = new Scene(panes, 250, 250);
+        Scene loginScene = new Scene(panes, 300, 200);
         loginButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent ea) {
                 try {
@@ -437,7 +442,106 @@ public class finalProject extends Application {
 
                         pane.setCenter(serviceTable);
                         Scene mainScene = new Scene(pane, 1200, 500);
+                        addUser.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent e) {
+                            GridPane userTextPane = new GridPane();
+                            BorderPane userMainPane = new BorderPane();
+                            userTextPane.setPadding(new Insets(15, 15, 15, 15));
+                            userTextPane.setHgap(5);
+                            userTextPane.setVgap(5);   
+                            ObservableList<User> users = FXCollections.observableArrayList();
+                            
+                            try {
+                                connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
+                                System.out.println("Opened database successfully");
+                                Statement stmt = null;
 
+                                stmt = connection.createStatement();
+                                ResultSet rs = stmt.executeQuery("SELECT * from Users;");
+
+                                // adding Cars to the Software store
+                                while (rs.next()) {
+
+                                    String userName=rs.getString("user_name"); 
+                                    int userType= rs.getInt("user_Type"); 
+                                    int userID= rs.getInt("user_ID"); 
+                                    int passwordRest= rs.getInt("pw_reset"); 
+                                    users.add(new User(userName, userType, userID, passwordRest));
+
+
+                            }
+                            } catch (Exception e2) {
+                                System.out.println(e2);
+                            }
+                            //TODO add 
+                          
+                            final ComboBox<String> userTypeBox = new ComboBox<String>();
+
+                            userTypeBox.getItems().add("Owner");
+                            userTypeBox.getItems().add("Manger");
+                            userTypeBox.getItems().add("Sercive Advisor");
+                            userTypeBox.getItems().add("Sercive Tech");
+                           
+                            TableView<User> userTable = new TableView<User>();
+                            Button addNewUserButton = new Button("Add New User");
+                            TextField userNameField = new TextField();
+                            
+                            userTextPane.add((new Label("User Name: ")),0,0);
+                            userTextPane.add(userNameField,0,1);
+
+                            userTextPane.add((new Label("User Type: ")),1,0);
+                            userTextPane.add(userTypeBox,1,1);
+
+                            userTextPane.add(addNewUserButton,2,2);
+                            TableColumn<User, String> userNameColumn = new TableColumn<>("User Name");
+                            userNameColumn.setMinWidth(300);
+                            userNameColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
+                            userNameColumn.setCellFactory(TextFieldTableCell.<User>forTableColumn());
+                            userNameColumn.setOnEditCommit((CellEditEvent<User, String> t) -> {
+                                ((User) t.getTableView().getItems()
+                                .get(t.getTablePosition().getRow()))
+                                        .setUserName((t.getNewValue()));
+
+
+                            });     
+                            TableColumn<User, String> userTypeColumn = new TableColumn<>("User Type");
+                            userTypeColumn.setMinWidth(200);
+                            userTypeColumn.setCellValueFactory(new PropertyValueFactory<>("userType"));
+                            userTypeColumn.setCellFactory(ComboBoxTableCell.forTableColumn(userTypeBox.getItems()));
+                            userTypeColumn.setOnEditCancel((CellEditEvent<User, String> t) -> {
+                                ((User) t.getTableView().getItems()
+                                .get(t.getTablePosition().getRow()))
+                                        .setUserType(Integer.parseInt(t.getNewValue()));
+                            });  
+                            TableColumn<User, String> userIDColumn = new TableColumn<>("User ID");
+                            userIDColumn.setMinWidth(100);
+                            userIDColumn.setCellValueFactory(new PropertyValueFactory<>("tableUserID"));
+                            userIDColumn.setCellFactory(TextFieldTableCell.<User>forTableColumn());
+
+                            TableColumn<User, Boolean> userPasswordColumn = new TableColumn<>("User Password Reset");
+                            userPasswordColumn.setMinWidth(300);
+                            userPasswordColumn.setCellValueFactory(new PropertyValueFactory<>("userReset"));
+                            userPasswordColumn.setCellFactory(CheckBoxTableCell.forTableColumn(userPasswordColumn));
+                            userPasswordColumn.setOnEditStart((CellEditEvent<User, Boolean> t) -> {
+                                ((User) t.getTableView().getItems()
+                                .get(t.getTablePosition().getRow()))
+                                        .setPasswordRest(t.getNewValue());
+                            });
+                            userTable.getColumns().add(userIDColumn);
+                            userTable.getColumns().add(userNameColumn);
+                            userTable.getColumns().add(userTypeColumn);
+                            userTable.getColumns().add(userPasswordColumn);
+                            userMainPane.setTop(userTextPane);
+                            userMainPane.setBottom(userTable);
+                            userTable.setItems(users);
+                            Scene userScene = new Scene(userMainPane, 1500, 350);
+                            userTable.setEditable(true);
+                            primaryStage.setTitle("User Panel");
+                            primaryStage.setScene(userScene);
+                            primaryStage.show();    
+                            }
+                        });
                         // load the add car scene and the needed items for that
                         addCar.setOnAction(new EventHandler<ActionEvent>() {
                             @Override
@@ -892,26 +996,7 @@ public class finalProject extends Application {
                                         }
                                     }
                                 });
-                                addUser.setOnAction(new EventHandler<ActionEvent>() {
-                                    @Override
-                                    public void handle(ActionEvent e) {
-                                    //TODO add 
-                                    TableView<String> userTable = new TableView<String>();
-                                    Button addNewUserButton = new Button("Add New User");
-                                    TableColumn<String, String> userNamecolumn = new TableColumn<>("User name");
-                                    userNamecolumn.setMinWidth(400);
-                                    userNamecolumn.setCellValueFactory(new PropertyValueFactory<>("serviceDate"));
-                                    userNamecolumn.setCellFactory(TextFieldTableCell.<String>forTableColumn());
-                                    userNamecolumn.setOnEditCommit((CellEditEvent<String, String> t) -> {
-                                    
-                                    });     
-                                    Scene userScene = new Scene(scenePane, 1500, 350);
-
-                                    primaryStage.setTitle("User Panel");
-                                    primaryStage.setScene(userScene);
-                                        
-                                    }
-                                });
+                               
                                 // adds the information to the dealer collection and saves the data
                                 addDealerButton.setOnAction(new EventHandler<ActionEvent>() {
                                     @Override
@@ -1194,32 +1279,4 @@ public class finalProject extends Application {
 
     }
     
-}
-class User{
-    String userName;
-    int userType;
-    int userID;
-
-    User(String userName, int userType, int userID){
-        this.userName = userName;
-        this.userType = userType;
-        this.userID = userID;
-    }
-    //setters
-    void setUserName(String userName){
-        this.userName = userName;
-    }
-    void setUserID(int type){
-        this.userType = type;
-    }
-    //getters
-    public int getUserID() {
-        return userID;
-    }
-    public String getUserName() {
-        return userName;
-    }
-    public int getUserType() {
-        return userType;
-    }
 }
