@@ -78,14 +78,14 @@ public class finalProject extends Application {
         GridPane loginPane = new GridPane();
         BorderPane panes = new BorderPane();
         Button loginButton = new Button("Login");
-
+        loginPane.setPadding(new Insets(15, 15, 15, 15));
         loginPane.add(new Label("Username: "), 0, 0);
         loginPane.add(username, 0, 1);
         loginPane.add(new Label("Password: "), 1, 0);
         loginPane.add(password, 1, 1);
-        loginPane.add(loginButton, 4, 0);
+        loginPane.add(loginButton, 0, 2);
         panes.setCenter(loginPane);
-        Scene loginScene = new Scene(panes, 500, 500);
+        Scene loginScene = new Scene(panes, 250, 250);
         loginButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent ea) {
                 try {
