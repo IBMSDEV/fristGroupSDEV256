@@ -273,6 +273,7 @@ public class finalProject extends Application {
                         Button addServiceOrder = new Button("Add Service Order");
                         Button addDealerTech = new Button("Add new or edit Dealer and Tech");
                         Button addCar = new Button("Add new or edit Car");
+                        Button addUser = new Button("Add user");
                         Alert a = new Alert(AlertType.ERROR);
                         // adding textFeilds to add the Service orders
                         TextField CarVin = new TextField();
@@ -397,6 +398,8 @@ public class finalProject extends Application {
                         textFeildsPane.add(addServiceOrder, 0, 3);
                         textFeildsPane.add(addDealerTech, 1, 0);
                         textFeildsPane.add(addCar, 2, 0);
+                        //only admins can add new users and change users info
+                        if(userType == 0) textFeildsPane.add(addUser, 0, 0);
                         // setting location
                         pane.setTop(textFeildsPane);
 
@@ -622,7 +625,7 @@ public class finalProject extends Application {
                                     }
                                 });
 
-                                Scene carScene = new Scene(scenePane, 1500, 350);
+                                Scene carScene = new Scene(scenePane, 1750, 350);
 
                                 primaryStage.setTitle("Car Adder");
                                 primaryStage.setScene(carScene);
@@ -767,8 +770,7 @@ public class finalProject extends Application {
                                     }
                                 });
 
-                                TableColumn<Dealership.ServiceTech, String> techNameColumn = new TableColumn<>(
-                                        "Tech Name");
+                                TableColumn<Dealership.ServiceTech, String> techNameColumn = new TableColumn<>("Tech Name");
                                 techNameColumn.setMinWidth(200);
                                 techNameColumn.setCellValueFactory(new PropertyValueFactory<>("techName"));
                                 techNameColumn
@@ -888,6 +890,26 @@ public class finalProject extends Application {
                                             // show the dialog
                                             a.show();
                                         }
+                                    }
+                                });
+                                addUser.setOnAction(new EventHandler<ActionEvent>() {
+                                    @Override
+                                    public void handle(ActionEvent e) {
+                                    //TODO add 
+                                    TableView<String> userTable = new TableView<String>();
+                                    Button addNewUserButton = new Button("Add New User");
+                                    TableColumn<String, String> userNamecolumn = new TableColumn<>("User name");
+                                    userNamecolumn.setMinWidth(400);
+                                    userNamecolumn.setCellValueFactory(new PropertyValueFactory<>("serviceDate"));
+                                    userNamecolumn.setCellFactory(TextFieldTableCell.<String>forTableColumn());
+                                    userNamecolumn.setOnEditCommit((CellEditEvent<String, String> t) -> {
+                                    
+                                    });     
+                                    Scene userScene = new Scene(scenePane, 1500, 350);
+
+                                    primaryStage.setTitle("User Panel");
+                                    primaryStage.setScene(userScene);
+                                        
                                     }
                                 });
                                 // adds the information to the dealer collection and saves the data
@@ -1091,7 +1113,6 @@ public class finalProject extends Application {
             String salt = rs.getString("salt");
             return checkingPassword(hash, salt, Password);
     } catch (Exception e) {
-        //TODO: handle exception
         return false;
     }
             
@@ -1171,5 +1192,34 @@ public class finalProject extends Application {
         // starting the GUI
         Application.launch(args);
 
+    }
+    
+}
+class User{
+    String userName;
+    int userType;
+    int userID;
+
+    User(String userName, int userType, int userID){
+        this.userName = userName;
+        this.userType = userType;
+        this.userID = userID;
+    }
+    //setters
+    void setUserName(String userName){
+        this.userName = userName;
+    }
+    void setUserID(int type){
+        this.userType = type;
+    }
+    //getters
+    public int getUserID() {
+        return userID;
+    }
+    public String getUserName() {
+        return userName;
+    }
+    public int getUserType() {
+        return userType;
     }
 }
