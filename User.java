@@ -39,8 +39,10 @@ public class User{
      public String getUserName() {
          return this.userName;
      }
-
-     public String getUserType() {
+     public int getUserType() {
+         return this.userType;
+     }
+     public String getTableUserType() {
         switch(this.userType) {
             case 0:
                 return "Admin";
@@ -63,5 +65,19 @@ public class User{
      public Boolean getPasswordRest() {
          return this.passwordRest;
      }
+     public int getDBPasswordRest() {
+         if (passwordRest) return 1;
+         else return 0;
+       
+    }
+	public void setUserType(String newValue) {
+        
+            if (newValue.equals("Owner")) this.userType = 1;
+            else if (newValue.equals("Manger")) this.userType = 2;
+            else if (newValue.equals("Sercive Advisor")) this.userType = 3;
+            else  this.userType = 4;
+           
+    }
+	
  }
  

@@ -453,8 +453,6 @@ public class finalProject extends Application {
                             ObservableList<User> users = FXCollections.observableArrayList();
                             
                             try {
-                                connection = DriverManager.getConnection("jdbc:sqlite:CarServiceDatabase.db");
-                                System.out.println("Opened database successfully");
                                 Statement stmt = null;
 
                                 stmt = connection.createStatement();
@@ -486,7 +484,7 @@ public class finalProject extends Application {
                             TableView<User> userTable = new TableView<User>();
                             Button addNewUserButton = new Button("Add New User");
                             TextField userNameField = new TextField();
-                            
+                            Button backButton = new Button("Back");
                             userTextPane.add((new Label("User Name: ")),0,0);
                             userTextPane.add(userNameField,0,1);
 
@@ -494,6 +492,14 @@ public class finalProject extends Application {
                             userTextPane.add(userTypeBox,1,1);
 
                             userTextPane.add(addNewUserButton,2,2);
+                            userTextPane.add(backButton,0,2);
+                            backButton.setOnAction(new EventHandler<ActionEvent>() {
+                                @Override
+                                public void handle(ActionEvent e) {
+                                    primaryStage.setScene(mainScene);
+                                    primaryStage.setTitle("Service Order Shower");
+                                }
+                            });
                             TableColumn<User, String> userNameColumn = new TableColumn<>("User Name");
                             userNameColumn.setMinWidth(300);
                             userNameColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
@@ -502,36 +508,77 @@ public class finalProject extends Application {
                                 ((User) t.getTableView().getItems()
                                 .get(t.getTablePosition().getRow()))
                                         .setUserName((t.getNewValue()));
+                                try {
+                                    PreparedStatement preparedStatement = connection.prepareStatement(
+                                    "update Users SET user_Name = ? where user_ID = ?");
+                                    preparedStatement.setString(1, t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserName());
+                                    preparedStatement.setInt(2, (t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserID()));
+                                    preparedStatement.executeUpdate();
+                                } catch (SQLException e1) {
+                                    Alert a = new Alert(AlertType.ERROR);
+                                    a.setContentText("update ERROR");
+                                    // show the dialog
+                                    
+                                    a.show();
+                                }
 
 
                             });     
                             TableColumn<User, String> userTypeColumn = new TableColumn<>("User Type");
                             userTypeColumn.setMinWidth(200);
-                            userTypeColumn.setCellValueFactory(new PropertyValueFactory<>("userType"));
+                            userTypeColumn.setCellValueFactory(new PropertyValueFactory<>("tableUserType"));
                             userTypeColumn.setCellFactory(ComboBoxTableCell.forTableColumn(userTypeBox.getItems()));
-                            userTypeColumn.setOnEditCancel((CellEditEvent<User, String> t) -> {
+                            userTypeColumn.setOnEditCommit((CellEditEvent<User, String> t) -> {
                                 ((User) t.getTableView().getItems()
                                 .get(t.getTablePosition().getRow()))
-                                        .setUserType(Integer.parseInt(t.getNewValue()));
+                                        .setUserType(t.getNewValue());
+                                try {
+                                    PreparedStatement preparedStatement = connection.prepareStatement(
+                                    "update Users SET user_Type = ? where user_ID = ?");
+                                    preparedStatement.setInt(1,t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserType());
+                                    preparedStatement.setInt(2, (t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserID()));
+                                    preparedStatement.executeUpdate();
+                                        } catch (SQLException e1) {
+                                            Alert a = new Alert(AlertType.ERROR);
+                                            a.setContentText("update ERROR");
+                                            // show the dialog
+                                            a.show();
+                                        }
                             });  
                             TableColumn<User, String> userIDColumn = new TableColumn<>("User ID");
                             userIDColumn.setMinWidth(100);
                             userIDColumn.setCellValueFactory(new PropertyValueFactory<>("tableUserID"));
-                            userIDColumn.setCellFactory(TextFieldTableCell.<User>forTableColumn());
-
+                            
                             TableColumn<User, Boolean> userPasswordColumn = new TableColumn<>("User Password Reset");
                             userPasswordColumn.setMinWidth(300);
-                            userPasswordColumn.setCellValueFactory(new PropertyValueFactory<>("userReset"));
-                            userPasswordColumn.setCellFactory(CheckBoxTableCell.forTableColumn(userPasswordColumn));
-                            userPasswordColumn.setOnEditStart((CellEditEvent<User, Boolean> t) -> {
-                                ((User) t.getTableView().getItems()
-                                .get(t.getTablePosition().getRow()))
-                                        .setPasswordRest(t.getNewValue());
-                            });
+                            userPasswordColumn.setCellValueFactory(new PropertyValueFactory<>("passwordRest"));
+                            // userPasswordColumn.setCellFactory(CheckBoxTableCell.forTableColumn(userPasswordColumn));
+                            // userPasswordColumn.setOnAction((CellEditEvent<User, Boolean> t) -> {
+                            //     ((User) t.getTableView().getItems()
+                            //     .get(t.getTablePosition().getRow()))
+                            //             .setPasswordRest(t.getNewValue());
+                            //             Alert sa = new Alert(AlertType.ERROR);
+                            //             sa.setContentText("update ERROR");
+                            //             // show the dialog
+                            //             sa.show();
+                            //     try {
+                            //         PreparedStatement preparedStatement = connection.prepareStatement(
+                            //         "update Users SET pw_reset = ? where user_ID = ?");
+                            //         preparedStatement.setInt(1,t.getTableView().getItems().get(t.getTablePosition().getRow()).getDBPasswordRest());
+                            //         preparedStatement.setInt(2, (t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserID()));
+                            //         preparedStatement.executeUpdate();
+                            //         } catch (SQLException e1) {
+                            //             Alert a = new Alert(AlertType.ERROR);
+                            //             a.setContentText("update ERROR");
+                            //             // show the dialog
+                            //             a.show();
+                            //         }            
+
+                           // });
                             userTable.getColumns().add(userIDColumn);
                             userTable.getColumns().add(userNameColumn);
                             userTable.getColumns().add(userTypeColumn);
-                            userTable.getColumns().add(userPasswordColumn);
+                            if(userType == 0) userTable.getColumns().add(userPasswordColumn);
                             userMainPane.setTop(userTextPane);
                             userMainPane.setBottom(userTable);
                             userTable.setItems(users);
